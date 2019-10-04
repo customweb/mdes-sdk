@@ -143,6 +143,70 @@ public class ApiClient {
     private HttpLoggingInterceptor loggingInterceptor;
 
     private EndPoint endpoint;
+    
+    public enum EndPoint {
+    	SANDBOX("https://sandbox.api.mastercard.com/mdes", "static"),
+    	
+    	MTF("https://api.mastercard.com/mdes", "mtf"),
+    	
+    	PRODUCTION("https://api.mastercard.com/mdes", ""),
+    	
+    	;
+    	
+    	private String basePath;
+    	private String env;
+    	
+    	private EndPoint(String basePath, String env) {
+    		this.basePath = basePath;
+    		this.env = env;
+    	}
+
+		public String getBasePath() {
+			return basePath;
+		}
+
+		public String getEnv() {
+			return env;
+		}
+    }
+    
+    public static class ApiClientConfiguration {
+    	private EndPoint endpoint;
+    	private PrivateKey signingKey; 
+	    private PrivateKey decryptionPrivateKey; 
+	    private Certificate publicKeyEncryptionCertificate; 
+	    private String consumerKey;
+	    
+		public ApiClientConfiguration(EndPoint endpoint, PrivateKey signingKey, PrivateKey decryptionPrivateKey,
+				Certificate publicKeyEncryptionCertificate, String consumerKey) {
+			super();
+			this.endpoint = endpoint;
+			this.signingKey = signingKey;
+			this.decryptionPrivateKey = decryptionPrivateKey;
+			this.publicKeyEncryptionCertificate = publicKeyEncryptionCertificate;
+			this.consumerKey = consumerKey;
+		}
+
+		public EndPoint getEndpoint() {
+			return endpoint;
+		}
+
+		public PrivateKey getSigningKey() {
+			return signingKey;
+		}
+
+		public PrivateKey getDecryptionPrivateKey() {
+			return decryptionPrivateKey;
+		}
+
+		public Certificate getPublicKeyEncryptionCertificate() {
+			return publicKeyEncryptionCertificate;
+		}
+
+		public String getConsumerKey() {
+			return consumerKey;
+		}
+    }   
 
     /*
      * Constructor for ApiClient
@@ -173,7 +237,7 @@ public class ApiClient {
         this.lenientDatetimeFormat = true;
 
         // Set default User-Agent.
-        setUserAgent("Swagger-Codegen/1.1.5/java");
+        setUserAgent("Swagger-Codegen/1.1.7/java");
 
         // Setup authentications (key: authentication name, value: authentication).
         authentications = new HashMap<String, Authentication>();

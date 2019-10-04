@@ -30,7 +30,7 @@ Add this dependency to your project's POM:
 <dependency>
     <groupId>com.customweb</groupId>
     <artifactId>wallee-mdes-sdk</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.7</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -40,7 +40,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "com.customweb:wallee-mdes-sdk:1.1.5"
+compile "com.customweb:wallee-mdes-sdk:1.1.7"
 ```
 
 ### Others
@@ -51,7 +51,7 @@ At first generate the JAR by executing:
 
 Then manually install the following JARs:
 
-* target/wallee-mdes-sdk-1.1.5.jar
+* target/wallee-mdes-sdk-1.1.7.jar
 * target/lib/*.jar
 
 ## Getting Started
