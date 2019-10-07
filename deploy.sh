@@ -6,5 +6,5 @@ then
 
 else
 	echo "[INFO] Running deployment based on the mvn_settings.xml"
-	mvn deploy -P sign,build-extras --settings mvn_settings.xml;
+	mvn deploy -Pe sign,build-extras --settings mvn_settings.xml;
 fi
