@@ -7,7 +7,7 @@ sudo: false
 install: 
   - mvn install -P !build-extras -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
-before_script
+before_script:
   - /bin/sh ./before_script.sh
 
 script:

@@ -2,7 +2,7 @@
 
 if [ -z "${TRAVIS_TAG}" ]; 
 then
-	echo "[INFO] This is not tagged build. The TRAVIS_TAG is not set. Skipping before_deploy step.";
+	echo "[INFO] This is not tagged build. The TRAVIS_TAG is not set. Skipping before_script step.";
 
 else
 	echo "[INFO] Running before_script script. Decrypting 'wallee_M4M-sandbox.p12.enc', 'public-key-encrypt.crt.enc', 'private-key-decrypt.pem.enc'"
