@@ -7,6 +7,7 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Properties;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Ignore;
