@@ -168,7 +168,6 @@
       <artifactId>swagger-annotations</artifactId>
       <version>${swagger-core-version}</version>
     </dependency>
-    <dependency>
     	
 		<dependency>
 			<groupId>com.squareup.okhttp</groupId>
