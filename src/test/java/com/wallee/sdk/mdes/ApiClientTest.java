@@ -38,24 +38,9 @@ public class ApiClientTest {
 
 	private ApiClient apiClient;
 
-	private static String signingKeyAlias;
-	private static String signingKeyPassword;
-	private static String consumerKey;
-	
-	static {
-		try (InputStream input = ApiClientTest.class.getClassLoader().getResourceAsStream("config.properties")) {
-
-			Properties prop = new Properties();
-			prop.load(input);
-
-			signingKeyAlias = prop.getProperty("signingKey.alias");
-			signingKeyPassword = prop.getProperty("signingKey.password");
-			consumerKey = prop.getProperty("consumerKey");
-			
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-	}
+	private static String signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS")).orElse(null);
+	private static String signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KYE_PASSWORD")).orElse(null); 
+	private static String consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElse(null);
 
 	public ApiClientTest() throws IOException, GeneralSecurityException {
 
