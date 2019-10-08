@@ -41,8 +41,10 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Objects;
 
 import java.net.URLEncoder;
+import java.net.Proxy;
 import java.net.URLConnection;
 
 import java.io.File;
@@ -171,20 +173,23 @@ public class ApiClient {
     }
     
     public static class ApiClientConfiguration {
-    	private EndPoint endpoint;
-    	private PrivateKey signingKey; 
-	    private PrivateKey decryptionPrivateKey; 
-	    private Certificate publicKeyEncryptionCertificate; 
-	    private String consumerKey;
+    	private final EndPoint endpoint;
+    	private final PrivateKey signingKey; 
+	    private final PrivateKey decryptionPrivateKey; 
+	    private final Certificate publicKeyEncryptionCertificate; 
+	    private final String consumerKey;
+	    private final Proxy proxy;
 	    
-		public ApiClientConfiguration(EndPoint endpoint, PrivateKey signingKey, PrivateKey decryptionPrivateKey,
-				Certificate publicKeyEncryptionCertificate, String consumerKey) {
-			super();
-			this.endpoint = endpoint;
-			this.signingKey = signingKey;
-			this.decryptionPrivateKey = decryptionPrivateKey;
-			this.publicKeyEncryptionCertificate = publicKeyEncryptionCertificate;
-			this.consumerKey = consumerKey;
+		private ApiClientConfiguration(EndPoint endpoint, PrivateKey signingKey, PrivateKey decryptionPrivateKey,
+				Certificate publicKeyEncryptionCertificate, String consumerKey, Proxy proxy) 
+		{
+			this.endpoint = Objects.requireNonNull(endpoint, "endpoint");
+			this.signingKey = Objects.requireNonNull(signingKey, "signingKey");
+			this.decryptionPrivateKey = Objects.requireNonNull(decryptionPrivateKey, "decryptionPrivateKey");
+			this.publicKeyEncryptionCertificate = Objects.requireNonNull(publicKeyEncryptionCertificate, "publicKeyEncryptionCertificate");
+			this.consumerKey = Objects.requireNonNull(consumerKey, "consumerKey");
+			
+			this.proxy = proxy; // optional parameter	 
 		}
 
 		public EndPoint getEndpoint() {
@@ -206,18 +211,106 @@ public class ApiClient {
 		public String getConsumerKey() {
 			return consumerKey;
 		}
-    }   
 
+		public Proxy getProxy() {
+			return proxy;
+		}
+		
+		public static Builder building() {
+			return new Builder();
+		}
+		
+		public static class Builder {
+	    	private EndPoint endpoint;
+	    	private PrivateKey signingKey; 
+		    private PrivateKey decryptionPrivateKey; 
+		    private Certificate publicKeyEncryptionCertificate; 
+		    private String consumerKey;
+		    private Proxy proxy;
+		    
+			public Builder setEndpoint(EndPoint endpoint) {
+				this.endpoint = endpoint;
+				return this;
+			}
+
+			public Builder setSigningKey(PrivateKey signingKey) {
+				this.signingKey = signingKey;
+				return this;
+			}
+
+			public Builder setDecryptionPrivateKey(PrivateKey decryptionPrivateKey) {
+				this.decryptionPrivateKey = decryptionPrivateKey;
+				return this;
+			}
+
+			public Builder setPublicKeyEncryptionCertificate(Certificate publicKeyEncryptionCertificate) {
+				this.publicKeyEncryptionCertificate = publicKeyEncryptionCertificate;
+				return this;
+			}
+
+			public Builder setConsumerKey(String consumerKey) {
+				this.consumerKey = consumerKey;
+				return this;
+			}
+
+			public void setProxy(Proxy proxy) {
+				this.proxy = proxy;
+			}
+			
+			public ApiClientConfiguration build() {
+				return new ApiClientConfiguration(endpoint, signingKey, decryptionPrivateKey, publicKeyEncryptionCertificate, consumerKey, proxy);
+			}
+		}
+    }     
+
+    private void initialize(ApiClientConfiguration apiClientConfiguration) {
+    	
+    	this.endpoint = apiClientConfiguration.getEndpoint();
+    	this.basePath = endpoint.getBasePath();
+    	
+    	httpClient = new OkHttpClient();
+    	httpClient.setProxy(apiClientConfiguration.getProxy());
+    	
+    	httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(
+    			apiClientConfiguration.getConsumerKey(), 
+    			apiClientConfiguration.getSigningKey()));
+    	
+    	httpClient.interceptors().add(new OkHttp2FieldLevelEncryptionInterceptor(buildFieldLevelEncryptionConfig(
+    			apiClientConfiguration.getPublicKeyEncryptionCertificate(), 
+    			apiClientConfiguration.getDecryptionPrivateKey())));
+    }
+    
+    private FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
+        
+		try {
+			return FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
+				    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
+				    .withEncryptionPath("$.encryptedPayload.encryptedData", "$.encryptedPayload")
+				    .withDecryptionPath("$.tokenDetail", "$.tokenDetail.encryptedData")
+				    .withDecryptionPath("$.encryptedPayload", "$.encryptedPayload.encryptedData")
+				    .withEncryptionCertificate(publicKeyEncryptionCertificate)
+				    .withDecryptionKey(decryptionPrivateKey)
+				    .withOaepPaddingDigestAlgorithm("SHA-512")
+				    .withEncryptedValueFieldName("encryptedData")
+				    .withEncryptedKeyFieldName("encryptedKey")
+				    .withIvFieldName("iv")
+				    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
+				    .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
+				    .withFieldValueEncoding(FieldValueEncoding.HEX)
+				    .build();
+		} catch (EncryptionException e) {
+			throw new RuntimeException(e);
+		}
+    }  
+    
+    
     /*
      * Constructor for ApiClient
      */
     public ApiClient(ApiClientConfiguration apiClientConfiguration) {
-    	this.endpoint = apiClientConfiguration.getEndpoint();
-    	this.basePath = endpoint.getBasePath();
-    	httpClient = new OkHttpClient();
-        httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(apiClientConfiguration.getConsumerKey(), apiClientConfiguration.getSigningKey()));
-        enableEncryption(apiClientConfiguration.getPublicKeyEncryptionCertificate(), apiClientConfiguration.getDecryptionPrivateKey());
-        
+    
+    	initialize(Objects.requireNonNull(apiClientConfiguration, "apiClientConfiguration"));
+    	        
 
         verifyingSsl = true;
 
@@ -237,7 +330,7 @@ public class ApiClient {
         this.lenientDatetimeFormat = true;
 
         // Set default User-Agent.
-        setUserAgent("Swagger-Codegen/1.1.0/java");
+        setUserAgent("Swagger-Codegen/1.1.1/java");
 
         // Setup authentications (key: authentication name, value: authentication).
         authentications = new HashMap<String, Authentication>();

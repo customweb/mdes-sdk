@@ -71,14 +71,14 @@ public class ApiClientTest {
 		Certificate publicKeyEncryptionCertificate = EncryptionUtils
 				.loadEncryptionCertificate(path + "public-key-encrypt.crt");
 
-
-		ApiClientConfiguration apiClientConfiguration = new ApiClientConfiguration(//
-				ApiClient.EndPoint.SANDBOX, //
-				signingKey, //
-				decryptionPrivateKey, //
-				publicKeyEncryptionCertificate, //
-				consumerKey);
-
+		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
+				.setEndpoint(ApiClient.EndPoint.SANDBOX)//
+				.setSigningKey(signingKey)//
+				.setDecryptionPrivateKey(decryptionPrivateKey)//
+				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
+				.setConsumerKey(consumerKey)
+				.build(); 
+		
 		apiClient = new ApiClient(apiClientConfiguration);
 	}
 
@@ -128,7 +128,6 @@ public class ApiClientTest {
 				.postalCode("61000").country("USA");
 	}
 
-	@Ignore // TODO
 	@Test
 	public void getTokenTest() throws ApiException {
 		GetTokenRequestSchema schema = new GetTokenRequestSchema();
