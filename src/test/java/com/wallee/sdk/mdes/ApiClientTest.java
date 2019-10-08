@@ -40,7 +40,7 @@ public class ApiClientTest {
 	private ApiClient apiClient;
 
 	private static String signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS")).orElse(null);
-	private static String signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KYE_PASSWORD")).orElse(null); 
+	private static String signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD")).orElse(null); 
 	private static String consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElse(null);
 
 	public ApiClientTest() throws IOException, GeneralSecurityException {

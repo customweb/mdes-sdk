@@ -23,6 +23,9 @@ cache:
 after_success:
   - /bin/sh ./before_deploy.sh
   - /bin/sh ./deploy.sh
+  
+after_failure:
+  - cat target/surefire-reports/*.txt  
 
 #deploy:
 #  skip_cleanup: true
