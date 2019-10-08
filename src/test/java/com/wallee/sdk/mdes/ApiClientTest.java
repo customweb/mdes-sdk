@@ -38,14 +38,17 @@ import com.wallee.sdk.mdes.model.TokenizeResponseSchema;
 public class ApiClientTest {
 
 	private ApiClient apiClient;
-
-	private static String signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS")).orElse(null);
-	private static String signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD")).orElse(null); 
-	private static String consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElse(null);
+	
+		private final String signingKeyAlias;
+	private final String signingKeyPassword; 
+	private final String consumerKey;
 
 	public ApiClientTest() throws IOException, GeneralSecurityException {
-
-		String path = "src/test/resources/";
+		signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS")).orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
+		signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD")).orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
+		consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
+	 
+		String path = "./src/test/resources/";
 
 		PrivateKey signingKey = AuthenticationUtils.loadSigningKey(//
 				path + "wallee_M4M-sandbox.p12", //
