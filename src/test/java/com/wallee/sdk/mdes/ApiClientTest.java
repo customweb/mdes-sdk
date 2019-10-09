@@ -52,6 +52,9 @@ public class ApiClientTest {
 	@BeforeClass
 	public static void loadFiles() throws IOException, GeneralSecurityException {
 
+		System.out.println("@BeforeClass");
+
+
 		signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS"))
 				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
 		signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD"))
