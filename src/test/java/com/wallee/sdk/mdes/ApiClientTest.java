@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -96,13 +96,13 @@ public class ApiClientTest {
 
 		decryptionPrivateKey = EncryptionUtils.loadDecryptionKey("./src/test/resources/" + "private-key-decrypt.pem");
 
-		String publicKeyStr = new String(Base64.decodeBase64(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
+		String publicKeyStr = new String(Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
 				StandardCharsets.UTF_8);
 		try (InputStream in = org.apache.commons.io.IOUtils.toInputStream(publicKeyStr, StandardCharsets.UTF_8)) {
 			publicKeyEncryptionCertificate = loadEncryptionCertificate(in);
 		}
-
-		byte[] decodeP12 = Base64.decodeBase64(encodedBase64SigningKey.getBytes(StandardCharsets.UTF_8));
+		
+		byte[] decodeP12 = Base64.getDecoder().decode(encodedBase64SigningKey.getBytes(StandardCharsets.UTF_8));
 
 		signingKey = loadSigningKey(//
 				decodeP12, signingKeyAlias, //
