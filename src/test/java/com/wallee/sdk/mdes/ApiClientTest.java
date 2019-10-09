@@ -72,13 +72,6 @@ public class ApiClientTest {
 				signingKeyPassword.charAt(0) + "--" + signingKeyPassword.charAt(signingKeyPassword.length() - 1));
 		System.out.println(consumerKey.charAt(0) + "--" + consumerKey.charAt(consumerKey.length() - 1));
 
-		Path file = Paths.get(path + "wallee_M4M-sandbox.p12");
-		System.out.println(Files.size(file));
-
-		signingKey = AuthenticationUtils.loadSigningKey(//
-				path + "wallee_M4M-sandbox.p12", //
-				signingKeyAlias, //
-				signingKeyPassword);
 
 		Path file2 = Paths.get(path + "private-key-decrypt.pem");
 		System.out.println(Files.size(file2));
@@ -89,6 +82,17 @@ public class ApiClientTest {
 		System.out.println(Files.size(file3));
 
 		publicKeyEncryptionCertificate = EncryptionUtils.loadEncryptionCertificate(path + "public-key-encrypt.crt");
+
+
+
+		Path file = Paths.get(path + "wallee_M4M-sandbox.p12");
+		System.out.println(Files.size(file));
+
+		signingKey = AuthenticationUtils.loadSigningKey(//
+				path + "wallee_M4M-sandbox.p12", //
+				signingKeyAlias, //
+				signingKeyPassword);
+
 	}
 
 	@Before
