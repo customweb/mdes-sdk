@@ -37,57 +37,65 @@ import com.wallee.sdk.mdes.model.TokenizeResponseSchema;
 
 public class ApiClientTest {
 
-	private ApiClient apiClient;
-	
-	private final String signingKeyAlias;
-	private final String signingKeyPassword; 
-	private final String consumerKey;
+	private static String signingKeyAlias;
+	private static String signingKeyPassword;
+	private static String consumerKey;
 
-	public ApiClientTest() throws IOException, GeneralSecurityException {
-		signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS")).orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
-		signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD")).orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
-		consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
-	 
+	private static PrivateKey signingKey;
+	private static PrivateKey decryptionPrivateKey;
+	private static Certificate publicKeyEncryptionCertificate;
+
+	private ApiClient apiClient;
+
+	@BeforeClass
+	public static void loadFiles() throws IOException, GeneralSecurityException {
+
+		signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS"))
+				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
+		signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD"))
+				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
+		consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY"))
+				.orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
+
 		String path = "./src/test/resources/";
-		
+
 		System.setProperty("javax.net.ssl.trustStoreType", "jks");
-		System.setProperty("javax.net.ssl.keyStoreType", "pkcs12"); 		
-		
+		System.setProperty("javax.net.ssl.keyStoreType", "pkcs12");
+
 		System.out.println(signingKeyAlias.charAt(0) + "--" + signingKeyAlias.charAt(signingKeyAlias.length() - 1));
-		System.out.println(signingKeyPassword.charAt(0) + "--" + signingKeyPassword.charAt(signingKeyPassword.length() - 1));
+		System.out.println(
+				signingKeyPassword.charAt(0) + "--" + signingKeyPassword.charAt(signingKeyPassword.length() - 1));
 		System.out.println(consumerKey.charAt(0) + "--" + consumerKey.charAt(consumerKey.length() - 1));
-		
-		
 
 		Path file = Paths.get(path + "wallee_M4M-sandbox.p12");
-		System.out.println(Files.size(file));		
+		System.out.println(Files.size(file));
 
-		PrivateKey signingKey = AuthenticationUtils.loadSigningKey(//
+		signingKey = AuthenticationUtils.loadSigningKey(//
 				path + "wallee_M4M-sandbox.p12", //
 				signingKeyAlias, //
 				signingKeyPassword);
-		
-		Path file2 = Paths.get(path + "private-key-decrypt.pem");
-		System.out.println(Files.size(file2));	
 
-		PrivateKey decryptionPrivateKey = EncryptionUtils
-				.loadDecryptionKey(path + "private-key-decrypt.pem");
-		
+		Path file2 = Paths.get(path + "private-key-decrypt.pem");
+		System.out.println(Files.size(file2));
+
+		decryptionPrivateKey = EncryptionUtils.loadDecryptionKey(path + "private-key-decrypt.pem");
+
 		Path file3 = Paths.get(path + "public-key-encrypt.crt");
-		System.out.println(Files.size(file3));	
-		
-		
-		Certificate publicKeyEncryptionCertificate = EncryptionUtils
-				.loadEncryptionCertificate(path + "public-key-encrypt.crt");
+		System.out.println(Files.size(file3));
+
+		publicKeyEncryptionCertificate = EncryptionUtils.loadEncryptionCertificate(path + "public-key-encrypt.crt");
+	}
+
+	@Before
+	public void initApiClient()  {
 
 		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
 				.setEndpoint(ApiClient.EndPoint.SANDBOX)//
 				.setSigningKey(signingKey)//
 				.setDecryptionPrivateKey(decryptionPrivateKey)//
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
-				.setConsumerKey(consumerKey)
-				.build(); 
-		
+				.setConsumerKey(consumerKey).build();
+
 		apiClient = new ApiClient(apiClientConfiguration);
 	}
 
