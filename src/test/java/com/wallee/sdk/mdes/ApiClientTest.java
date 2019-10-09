@@ -39,7 +39,7 @@ public class ApiClientTest {
 
 	private ApiClient apiClient;
 	
-		private final String signingKeyAlias;
+	private final String signingKeyAlias;
 	private final String signingKeyPassword; 
 	private final String consumerKey;
 
@@ -49,6 +49,9 @@ public class ApiClientTest {
 		consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY")).orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
 	 
 		String path = "./src/test/resources/";
+		
+		System.setProperty("javax.net.ssl.trustStoreType", "jks");
+		System.setProperty("javax.net.ssl.keyStoreType", "pkcs12"); 		
 
 		PrivateKey signingKey = AuthenticationUtils.loadSigningKey(//
 				path + "wallee_M4M-sandbox.p12", //
