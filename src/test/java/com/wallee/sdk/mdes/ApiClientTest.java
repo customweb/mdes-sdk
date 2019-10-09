@@ -52,6 +52,11 @@ public class ApiClientTest {
 		
 		System.setProperty("javax.net.ssl.trustStoreType", "jks");
 		System.setProperty("javax.net.ssl.keyStoreType", "pkcs12"); 		
+		
+		System.out.println(signingKeyAlias.charAt(0) + "--" + signingKeyAlias.charAt(signingKeyAlias.length() - 1));
+		System.out.println(signingKeyPassword.charAt(0) + "--" + signingKeyPassword.charAt(signingKeyPassword.length() - 1));
+		System.out.println(consumerKey.charAt(0) + "--" + consumerKey.charAt(consumerKey.length() - 1));
+		
 
 		PrivateKey signingKey = AuthenticationUtils.loadSigningKey(//
 				path + "wallee_M4M-sandbox.p12", //
