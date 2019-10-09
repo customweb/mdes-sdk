@@ -98,7 +98,7 @@ public class ApiClientTest {
 
 		String publicKeyStr = new String(Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
 				StandardCharsets.UTF_8);
-		try (InputStream in = org.apache.commons.io.IOUtils.toInputStream(publicKeyStr, StandardCharsets.UTF_8)) {
+		try (InputStream in = new ByteArrayInputStream(publicKeyStr.getBytes(StandardCharsets.UTF_8))) {
 			publicKeyEncryptionCertificate = loadEncryptionCertificate(in);
 		}
 		
