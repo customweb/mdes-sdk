@@ -1,6 +1,7 @@
 package com.wallee.sdk.mdes;
 
-
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -57,6 +58,10 @@ public class ApiClientTest {
 		System.out.println(signingKeyPassword.charAt(0) + "--" + signingKeyPassword.charAt(signingKeyPassword.length() - 1));
 		System.out.println(consumerKey.charAt(0) + "--" + consumerKey.charAt(consumerKey.length() - 1));
 		
+		
+
+		Path file = Paths.get(path + "wallee_M4M-sandbox.p12");
+		System.out.println(Files.size(file));		
 
 		PrivateKey signingKey = AuthenticationUtils.loadSigningKey(//
 				path + "wallee_M4M-sandbox.p12", //
