@@ -3,14 +3,18 @@ package com.wallee.sdk.mdes;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,18 +28,37 @@ import com.squareup.okhttp.Response;
 import com.wallee.sdk.mdes.ApiClient;
 import com.wallee.sdk.mdes.ApiClient.ApiClientConfiguration;
 import com.wallee.sdk.mdes.ApiException;
+import com.wallee.sdk.mdes.api.DeleteApi;
+import com.wallee.sdk.mdes.api.GetAssetApi;
+import com.wallee.sdk.mdes.api.GetDigitalAssetsApi;
+import com.wallee.sdk.mdes.api.GetTaskStatusApi;
 import com.wallee.sdk.mdes.api.GetTokenApi;
+import com.wallee.sdk.mdes.api.SearchTokensApi;
 import com.wallee.sdk.mdes.api.TokenizeApi;
+import com.wallee.sdk.mdes.api.TransactApi;
 import com.wallee.sdk.mdes.model.AccountHolderData;
+import com.wallee.sdk.mdes.model.AssetResponseSchema;
 import com.wallee.sdk.mdes.model.BillingAddress;
 import com.wallee.sdk.mdes.model.CardAccountDataInbound;
+import com.wallee.sdk.mdes.model.DeleteRequestSchema;
+import com.wallee.sdk.mdes.model.DeleteResponseSchema;
 import com.wallee.sdk.mdes.model.FundingAccountData;
 import com.wallee.sdk.mdes.model.FundingAccountInfo;
 import com.wallee.sdk.mdes.model.FundingAccountInfoEncryptedPayload;
+import com.wallee.sdk.mdes.model.GetDigitalAssetsEncryptedData;
+import com.wallee.sdk.mdes.model.GetDigitalAssetsRequestSchema;
+import com.wallee.sdk.mdes.model.GetDigitalAssetsRequestSchemaEncryptedPayload;
+import com.wallee.sdk.mdes.model.GetDigitalAssetsResponseSchema;
+import com.wallee.sdk.mdes.model.GetTaskStatusRequestSchema;
+import com.wallee.sdk.mdes.model.GetTaskStatusResponseSchema;
 import com.wallee.sdk.mdes.model.GetTokenRequestSchema;
 import com.wallee.sdk.mdes.model.GetTokenResponseSchema;
+import com.wallee.sdk.mdes.model.SearchTokensRequestSchema;
+import com.wallee.sdk.mdes.model.SearchTokensResponseSchema;
 import com.wallee.sdk.mdes.model.TokenizeRequestSchema;
 import com.wallee.sdk.mdes.model.TokenizeResponseSchema;
+import com.wallee.sdk.mdes.model.TransactRequestSchema;
+import com.wallee.sdk.mdes.model.TransactResponseSchema;
 
 public class ApiClientTest {
 
@@ -46,8 +69,6 @@ public class ApiClientTest {
 	private static PrivateKey signingKey;
 	private static PrivateKey decryptionPrivateKey;
 	private static Certificate publicKeyEncryptionCertificate;
-
-	private ApiClient apiClient;
 
 	@BeforeClass
 	public static void loadFiles() throws IOException, GeneralSecurityException {
@@ -81,7 +102,8 @@ public class ApiClientTest {
 		Path file3 = Paths.get(path + "public-key-encrypt.crt");
 		System.out.println(Files.size(file3));
 
-		publicKeyEncryptionCertificate = EncryptionUtils.loadEncryptionCertificate(path + "public-key-encrypt.crt");
+		publicKeyEncryptionCertificate = EncryptionUtils.loadEncryptionCertificate(Paths.get(path + "public-key-encrypt.crt").toFile().getAbsolutePath());
+		
 
 
 
@@ -95,8 +117,7 @@ public class ApiClientTest {
 
 	}
 
-	@Before
-	public void initApiClient()  {
+	private ApiClient buildApiClient() {
 
 		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
 				.setEndpoint(ApiClient.EndPoint.SANDBOX)//
@@ -105,11 +126,11 @@ public class ApiClientTest {
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
 				.setConsumerKey(consumerKey).build();
 
-		apiClient = new ApiClient(apiClientConfiguration);
+		return new ApiClient(apiClientConfiguration);
 	}
 
 	@Ignore // TODO
-	@Test
+	@Test // TODO it is failing
 	public void tokenizeTest() throws ApiException {
 
 		TokenizeRequestSchema tokenizeRequestSchema = new TokenizeRequestSchema();
@@ -122,6 +143,10 @@ public class ApiClientTest {
 		tokenizeRequestSchema.setConsumerLanguage("en");
 //		tokenizeRequestSchema.setTokenizationAuthenticationValue("RHVtbXkgYmFzZSA2NCBkYXRhIC0gdGhpcyBpcyBub3QgYSByZWFsIFRBViBleGFtcGxl");
 
+		
+		ApiClient apiClient = buildApiClient();
+
+		
 		TokenizeResponseSchema response = new TokenizeApi(apiClient).createTokenize(tokenizeRequestSchema);
 
 		System.out.println(response);
@@ -154,25 +179,7 @@ public class ApiClientTest {
 				.postalCode("61000").country("USA");
 	}
 
-	@Test
-	public void getTokenTest() throws ApiException {
-		GetTokenRequestSchema schema = new GetTokenRequestSchema();
-		schema.setResponseHost("site2.payment-app-provider.com");
-		schema.setRequestId("123456");
-		schema.setPaymentAppInstanceId("123456789");
-		schema.setTokenUniqueReference("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45");
-		schema.setIncludeTokenDetail("true");
 
-		GetTokenResponseSchema response = new GetTokenApi(apiClient).getToken(schema);
-
-		Assert.assertEquals("123456", response.getResponseId());
-		Assert.assertEquals("ACTIVE", response.getToken().getStatus());
-		Assert.assertEquals("5123456789012345", response.getTokenDetail().getEncryptedData().getTokenNumber());
-		Assert.assertEquals("12", response.getTokenDetail().getEncryptedData().getExpiryMonth());
-		Assert.assertEquals("22", response.getTokenDetail().getEncryptedData().getExpiryYear());
-		Assert.assertEquals("500181d9f8e0629211e3949a08002",
-				response.getTokenDetail().getEncryptedData().getPaymentAccountReference());
-	}
 
 	// TODO remove
 	// test if tokenization works if we force to use the provide public key
@@ -192,8 +199,166 @@ public class ApiClientTest {
 		RequestBody encryptedBody = RequestBody.create(mediaType, encryptedPayload);
 		request = requestBuilder.method("POST", encryptedBody).header("Content-Length", "1624").build();
 
+		ApiClient apiClient = buildApiClient();
+
 		Response response = apiClient.getHttpClient().newCall(request).execute();
 		System.out.println(response);
+	}
+	
+	@Test
+	public void getAssetTest() throws ApiException {	
+		ApiClient apiClient = buildApiClient();
+
+		GetAssetApi getAssetApi = new GetAssetApi(apiClient);
+		AssetResponseSchema response = getAssetApi.getAsset("3789637f-32a1-4810-a138-4bf34501c509");
+		Assert.assertEquals("image/pdf", response.getMediaContents().get(0).getType());
+		Assert.assertEquals("JVBERi0xLjUNJeLjz9MNCjEgMCBvYmoNPDwvTWV0YWRhdGEgMiAwIFIvT0NQcm9wZXJ0aWVzPDwvRDw8L09OWzUgMCBSXS9PcmRl", response.getMediaContents().get(0).getData().substring(0, 100));
+	}
+	
+	@Test // TODO it is failing
+	public void getDigitalAssets() throws ApiException {	
+		ApiClient apiClient = buildApiClient();
+
+		GetDigitalAssetsApi requestApi = new GetDigitalAssetsApi(apiClient);
+		
+		GetDigitalAssetsEncryptedData encryptedData = new GetDigitalAssetsEncryptedData();
+		encryptedData.setAccountNumber("5480981500100002");
+		
+		GetDigitalAssetsRequestSchemaEncryptedPayload encryptedPayload = new GetDigitalAssetsRequestSchemaEncryptedPayload();
+		encryptedPayload.setEncryptedData(encryptedData);
+//		encryptedPayload.setOaepHashingAlgorithm("SHA512");
+//		encryptedPayload.setEncryptedKey("A1B2C3D4E5F6112233445566");
+//		encryptedPayload.setPublicKeyFingerprint("4c4ead5927f0df8117f178eea9308daa58e27c2b");
+		
+		GetDigitalAssetsRequestSchema requestSchema = new GetDigitalAssetsRequestSchema();
+		requestSchema.setResponseHost("site2.payment-app-provider.com");
+		requestSchema.setRequestId("123456");
+		requestSchema.setEncryptedPayload(encryptedPayload);
+		
+		GetDigitalAssetsResponseSchema response = requestApi.getDigitalAssets(requestSchema);
+		
+		fail();
+	}
+	
+	@Test
+	public void getDeleteTest() throws ApiException {		
+		
+		ApiClient apiClient = buildApiClient();
+
+		DeleteApi deleteRequest = new DeleteApi(apiClient);
+		DeleteRequestSchema deleteRequestSchema = new DeleteRequestSchema();
+		deleteRequestSchema.setResponseHost("site2.payment-app-provider.com");
+		deleteRequestSchema.setRequestId("123456");
+		deleteRequestSchema.setPaymentAppInstanceId("123456789");
+		List<String> tokenList = Arrays.asList(new String[] {"DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45"});
+		deleteRequestSchema.setTokenUniqueReferences(tokenList);
+		deleteRequestSchema.setCausedBy("CARDHOLDER");
+		deleteRequestSchema.setReason("Lost/stolen device");
+		deleteRequestSchema.setReasonCode("SUSPECTED_FRAUD");
+
+		DeleteResponseSchema response = deleteRequest.deleteDigitization(deleteRequestSchema);
+		Assert.assertEquals("site.1.sample.service.mastercard.com", response.getResponseHost());
+		Assert.assertEquals("123456", response.getResponseId());
+		Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokens().get(0).getTokenUniqueReference());
+		Assert.assertEquals("DEACTIVATED", response.getTokens().get(0).getStatus());
+		Assert.assertEquals(null, response.getTokens().get(0).getSuspendedBy());
+		Assert.assertEquals("2019-10-09", response.getTokens().get(0).getStatusTimestamp().substring(0, "2019-10-09".length()));
+	}
+	
+	
+	@Test 
+	public void getTaskStatusTest() throws ApiException {
+		
+		ApiClient apiClient = buildApiClient();
+
+		GetTaskStatusApi request = new GetTaskStatusApi(apiClient);
+		GetTaskStatusRequestSchema getTaskStatusRequestSchema = new GetTaskStatusRequestSchema();
+		getTaskStatusRequestSchema.setResponseHost("site2.payment-app-provider.com");
+		getTaskStatusRequestSchema.setRequestId("123456");
+		getTaskStatusRequestSchema.setTokenRequestorId("98765432101");
+		getTaskStatusRequestSchema.setTaskId("123456");
+		GetTaskStatusResponseSchema response = request.getTaskStatus(getTaskStatusRequestSchema);
+		
+		Assert.assertEquals("123456", response.getResponseId());
+		Assert.assertEquals("site.1.sample.service.mastercard.com", response.getResponseHost());
+		Assert.assertEquals("PENDING", response.getStatus());
+	}
+	
+	@Test // TODO coding not ended.
+	public void searchTokensTest() throws ApiException {
+		
+		ApiClient apiClient = buildApiClient();
+
+		SearchTokensApi requestApi = new SearchTokensApi(apiClient);
+		
+		SearchTokensRequestSchema searchTokensRequestSchema = new SearchTokensRequestSchema();
+		searchTokensRequestSchema.setRequestId("123456");
+		searchTokensRequestSchema.setResponseHost("site2.payment-app-provider.com");
+		
+		
+		FundingAccountInfo fundingAccountInfo = new FundingAccountInfo();
+		
+		searchTokensRequestSchema.setFundingAccountInfo(fundingAccountInfo);
+		
+		
+		SearchTokensResponseSchema response = requestApi.searchTokens(searchTokensRequestSchema);
+		
+		
+		fail();
+	}
+	
+	@Test
+	public void getTokenTest() throws ApiException {
+		GetTokenRequestSchema schema = new GetTokenRequestSchema();
+		schema.setResponseHost("site2.payment-app-provider.com");
+		schema.setRequestId("123456");
+		schema.setPaymentAppInstanceId("123456789");
+		schema.setTokenUniqueReference("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45");
+		schema.setIncludeTokenDetail("true");
+
+		ApiClient apiClient = buildApiClient();
+		GetTokenResponseSchema response = new GetTokenApi(apiClient).getToken(schema);
+
+		Assert.assertEquals("123456", response.getResponseId());
+		Assert.assertEquals("ACTIVE", response.getToken().getStatus());
+		Assert.assertEquals("5123456789012345", response.getTokenDetail().getEncryptedData().getTokenNumber());
+		Assert.assertEquals("12", response.getTokenDetail().getEncryptedData().getExpiryMonth());
+		Assert.assertEquals("22", response.getTokenDetail().getEncryptedData().getExpiryYear());
+		Assert.assertEquals("500181d9f8e0629211e3949a08002",
+				response.getTokenDetail().getEncryptedData().getPaymentAccountReference());
+	}
+	
+	@Test
+	public void transactTest() throws ApiException {
+		
+		ApiClient apiClient = buildApiClient();
+		
+		TransactApi transact = new TransactApi(apiClient);
+
+		TransactRequestSchema transactRequestSchema = new TransactRequestSchema();
+		transactRequestSchema.setResponseHost("site2.payment-app-provider.com");
+		transactRequestSchema.setRequestId("123456");
+		transactRequestSchema.setTokenUniqueReference("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45");
+		transactRequestSchema.setDsrpType("UCAF");
+		transactRequestSchema.setUnpredictableNumber("23424563");
+		
+		TransactResponseSchema response = transact.createTransact(transactRequestSchema);
+		
+		// Assert.assertEquals("4fd19399-8c77-48ac-9105-7380ff72a198", response.getResponseId()); always it returns different
+		Assert.assertEquals(null, response.getResponseHost());
+		Assert.assertEquals(null, response.getEncryptedPayload().getPublicKeyFingerprint());
+		Assert.assertEquals(null, response.getEncryptedPayload().getEncryptedKey());
+		Assert.assertEquals(null, response.getEncryptedPayload().getOaepHashingAlgorithm());
+		Assert.assertEquals(null, response.getEncryptedPayload().getIv());
+		Assert.assertEquals("5204240500000505", response.getEncryptedPayload().getEncryptedData().getAccountNumber());
+		Assert.assertEquals("20191109", response.getEncryptedPayload().getEncryptedData().getApplicationExpiryDate());
+		Assert.assertEquals("00", response.getEncryptedPayload().getEncryptedData().getPanSequenceNumber());
+		Assert.assertEquals("5204240500000505D19022010000000000000F", response.getEncryptedPayload().getEncryptedData().getTrack2Equivalent());
+		Assert.assertEquals("AF1ajnoLKKj8AAKhssPUGgADFA==", response.getEncryptedPayload().getEncryptedData().getDe48se43Data());
+	}
+	
+	public static void main(String[] args) throws ApiException {
+		new ApiClientTest().getAssetTest();
 	}
 
 }
