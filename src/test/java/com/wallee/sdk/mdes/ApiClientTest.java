@@ -66,9 +66,17 @@ public class ApiClientTest {
 				path + "wallee_M4M-sandbox.p12", //
 				signingKeyAlias, //
 				signingKeyPassword);
+		
+		Path file2 = Paths.get(path + "private-key-decrypt.pem");
+		System.out.println(Files.size(file2));	
 
 		PrivateKey decryptionPrivateKey = EncryptionUtils
 				.loadDecryptionKey(path + "private-key-decrypt.pem");
+		
+		Path file3 = Paths.get(path + "public-key-encrypt.crt");
+		System.out.println(Files.size(file3));	
+		
+		
 		Certificate publicKeyEncryptionCertificate = EncryptionUtils
 				.loadEncryptionCertificate(path + "public-key-encrypt.crt");
 
