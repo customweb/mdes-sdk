@@ -13,56 +13,38 @@
 
 package com.wallee.sdk.mdes;
 
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.internal.http.HttpMethod;
-import com.squareup.okhttp.logging.HttpLoggingInterceptor;
-import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.Objects;
-
-import java.net.URLEncoder;
 import java.net.Proxy;
 import java.net.URLConnection;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
@@ -72,21 +54,32 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import okio.BufferedSink;
-import okio.Okio;
-
-import com.wallee.sdk.mdes.auth.Authentication;
-import com.wallee.sdk.mdes.auth.HttpBasicAuth;
-import com.wallee.sdk.mdes.auth.ApiKeyAuth;
-import com.wallee.sdk.mdes.auth.OAuth;
-
-import com.mastercard.developer.interceptors.OkHttp2OAuth1Interceptor;
-import java.security.PrivateKey;
 import com.mastercard.developer.encryption.EncryptionException;
 import com.mastercard.developer.encryption.FieldLevelEncryptionConfig;
 import com.mastercard.developer.encryption.FieldLevelEncryptionConfig.FieldValueEncoding;
 import com.mastercard.developer.encryption.FieldLevelEncryptionConfigBuilder;
 import com.mastercard.developer.interceptors.OkHttp2FieldLevelEncryptionInterceptor;
+import com.mastercard.developer.interceptors.OkHttp2OAuth1Interceptor;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.internal.http.HttpMethod;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
+import com.wallee.sdk.mdes.auth.ApiKeyAuth;
+import com.wallee.sdk.mdes.auth.Authentication;
+import com.wallee.sdk.mdes.auth.HttpBasicAuth;
+import com.wallee.sdk.mdes.auth.OAuth;
+
+import okio.BufferedSink;
+import okio.Okio;
 
 
 public class ApiClient {
@@ -271,17 +264,18 @@ public class ApiClient {
     	httpClient = new OkHttpClient();
     	httpClient.setProxy(apiClientConfiguration.getProxy());
     	
-    	httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(
-    			apiClientConfiguration.getConsumerKey(), 
-    			apiClientConfiguration.getSigningKey()));
-    	
+    	// 1) before should run the Encryption interceptor.
     	httpClient.interceptors().add(new OkHttp2FieldLevelEncryptionInterceptor(buildFieldLevelEncryptionConfig(
     			apiClientConfiguration.getPublicKeyEncryptionCertificate(), 
     			apiClientConfiguration.getDecryptionPrivateKey())));
+    	
+    	// 2) after should run the Authentification interceptor.
+    	httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(
+    			apiClientConfiguration.getConsumerKey(), 
+    			apiClientConfiguration.getSigningKey()));
     }
     
     private FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
-        
 		try {
 			return FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
 				    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
@@ -337,39 +331,6 @@ public class ApiClient {
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
     }
-    
-    private void enableEncryption(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
-        FieldLevelEncryptionConfig fieldLevelEncryptionConfig;
-		try {
-			fieldLevelEncryptionConfig = FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
-				    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
-				    .withEncryptionPath("$.encryptedPayload.encryptedData", "$.encryptedPayload")
-				    .withDecryptionPath("$.tokenDetail", "$.tokenDetail.encryptedData")
-				    .withDecryptionPath("$.encryptedPayload", "$.encryptedPayload.encryptedData")
-				    
-				    
-				    .withEncryptionCertificate(publicKeyEncryptionCertificate)
-				    .withDecryptionKey(decryptionPrivateKey)
-				    // TODO
-//				    .withEncryptionCertificate(EncryptionUtils.loadEncryptionCertificate("/home/rodriguez/Code/io.wallee.tokenization.m4m/io.wallee.tokenization.m4m.sdk/src/test/resources/encryptionDecryptionKeys/759108974d6cb32480d003b49349PublicKey-Encrypt.crt"))
-//				    .withDecryptionKey(EncryptionUtils.loadDecryptionKey("/home/rodriguez/Code/io.wallee.tokenization.m4m/io.wallee.tokenization.m4m.sdk/src/test/resources/encryptionDecryptionKeys/e5fec5dc4e2fab3c968dbe78a905PrivateKey-Decrypt.pem"))
-				    				    
-				    
-				    .withOaepPaddingDigestAlgorithm("SHA-512")
-				    .withEncryptedValueFieldName("encryptedData")
-				    .withEncryptedKeyFieldName("encryptedKey")
-				    .withIvFieldName("iv")
-				    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
-				    .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
-				    .withFieldValueEncoding(FieldValueEncoding.HEX)
-				    .build();
-	    	httpClient.interceptors().add(new OkHttp2FieldLevelEncryptionInterceptor(fieldLevelEncryptionConfig));
-  // TODO
-		} catch (EncryptionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }    
     
     /**
      * Get base path

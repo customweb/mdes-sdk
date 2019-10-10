@@ -1,7 +1,5 @@
 package com.wallee.sdk.mdes;
 
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,20 +15,15 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.Base64;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mastercard.developer.utils.EncryptionUtils;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 import com.wallee.sdk.mdes.ApiClient.ApiClientConfiguration;
 import com.wallee.sdk.mdes.api.DeleteApi;
 import com.wallee.sdk.mdes.api.GetAssetApi;
@@ -77,45 +70,65 @@ public class ApiClientTest {
 	private static String encodedBase64SigningKey;
 
 	@BeforeClass
-	public static void loadFiles() throws IOException, GeneralSecurityException {
+	public static void loadKeys() throws IOException, GeneralSecurityException {
 
-		System.out.println("@BeforeClass");
-
-		signingKeyAlias = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS"))
-				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
-		signingKeyPassword = Optional.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD"))
-				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
-		consumerKey = Optional.ofNullable(System.getenv("MDES_CONSUMER_KEY"))
-				.orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
-
-		encodedBase64PublicKey = Optional.ofNullable(System.getenv("MDES_ENCODED_BASE64_PUBLIC_KEY"))
-				.orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_PUBLIC_KEY"));
-
-		encodedBase64SigningKey = Optional.ofNullable(System.getenv("MDES_ENCODED_BASE64_SIGNING_KEY"))
-				.orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_SIGNING_KEY"));
-
-		decryptionPrivateKey = EncryptionUtils.loadDecryptionKey("./src/test/resources/" + "private-key-decrypt.pem");
-
-		String publicKeyStr = new String(Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
+		loadEnviromentVariables();
+		
+		// public key
+		String decodedPublicKeyStr = new String(Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
 				StandardCharsets.UTF_8);
-		try (InputStream in = new ByteArrayInputStream(publicKeyStr.getBytes(StandardCharsets.UTF_8))) {
+		try (InputStream in = new ByteArrayInputStream(decodedPublicKeyStr.getBytes(StandardCharsets.UTF_8))) {
 			publicKeyEncryptionCertificate = loadEncryptionCertificate(in);
 		}
-		
+
+		// private key
+		decryptionPrivateKey = EncryptionUtils.loadDecryptionKey("./src/test/resources/private-key-decrypt.pem");
+
+		// signing key	
 		byte[] decodeP12 = Base64.getDecoder().decode(encodedBase64SigningKey.getBytes(StandardCharsets.UTF_8));
 
 		signingKey = loadSigningKey(//
-				decodeP12, signingKeyAlias, //
+				decodeP12, // 
+				signingKeyAlias, //
 				signingKeyPassword);
 	}
 
-	public static Certificate loadEncryptionCertificate(InputStream inStream)
+	private static void loadEnviromentVariables() throws GeneralSecurityException, IOException {
+		signingKeyAlias = Optional//
+				.ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS"))//
+				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
+		
+		signingKeyPassword = Optional//
+				.ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD"))//
+				.orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
+		
+		consumerKey = Optional//
+				.ofNullable(System.getenv("MDES_CONSUMER_KEY"))//
+				.orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
+		
+		encodedBase64PublicKey = Optional//
+				.ofNullable(System.getenv("MDES_ENCODED_BASE64_PUBLIC_KEY"))//
+				.orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_PUBLIC_KEY"));
+		
+		encodedBase64SigningKey = Optional//
+				.ofNullable(System.getenv("MDES_ENCODED_BASE64_SIGNING_KEY"))//
+				.orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_SIGNING_KEY"));
+	}
+	/*
+	 * Overloaded version with input parameter InputStream instead of String (path) of:
+	 * com.mastercard.developer.utils.EncryptionUtils.loadEncryptionCertificate(String)
+	 */
+	private static Certificate loadEncryptionCertificate(InputStream inStream)
 			throws CertificateException, NoSuchProviderException {
 		CertificateFactory factory = CertificateFactory.getInstance("X.509", "SUN");
 		return factory.generateCertificate(inStream);
 	}
 
-	public static PrivateKey loadSigningKey(byte[] pkcs12Key, String signingKeyAlias, String signingKeyPassword)
+	/*
+	 * Overloaded version with signing-key as byte array parameter instead of String (path) of:
+	 * com.mastercard.developer.utils.AuthenticationUtils.loadSigningKey(String, String, String)
+	 */
+	private static PrivateKey loadSigningKey(byte[] pkcs12Key, String signingKeyAlias, String signingKeyPassword)
 			throws IOException, NoSuchProviderException, KeyStoreException, CertificateException,
 			NoSuchAlgorithmException, UnrecoverableKeyException {
 		KeyStore pkcs12KeyStore = KeyStore.getInstance("PKCS12", "SunJSSE");
@@ -128,19 +141,18 @@ public class ApiClientTest {
 	}
 
 	private ApiClient buildApiClient() {
-
 		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
 				.setEndpoint(ApiClient.EndPoint.SANDBOX)//
 				.setSigningKey(signingKey)//
 				.setDecryptionPrivateKey(decryptionPrivateKey)//
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
-				.setConsumerKey(consumerKey).build();
+				.setConsumerKey(consumerKey)//
+				.build();
 
 		return new ApiClient(apiClientConfiguration);
 	}
 
-	@Ignore // TODO
-	@Test // TODO it is failing
+	@Test 
 	public void tokenizeTest() throws ApiException {
 
 		TokenizeRequestSchema tokenizeRequestSchema = new TokenizeRequestSchema();
@@ -151,13 +163,65 @@ public class ApiClientTest {
 		tokenizeRequestSchema.setTaskId("123456");
 		tokenizeRequestSchema.setFundingAccountInfo(buildFundingAccountInfo());
 		tokenizeRequestSchema.setConsumerLanguage("en");
-//		tokenizeRequestSchema.setTokenizationAuthenticationValue("RHVtbXkgYmFzZSA2NCBkYXRhIC0gdGhpcyBpcyBub3QgYSByZWFsIFRBViBleGFtcGxl");
+		tokenizeRequestSchema.setTokenizationAuthenticationValue("RHVtbXkgYmFzZSA2NCBkYXRhIC0gdGhpcyBpcyBub3QgYSByZWFsIFRBViBleGFtcGxl"); 
 
 		ApiClient apiClient = buildApiClient();
 
 		TokenizeResponseSchema response = new TokenizeApi(apiClient).createTokenize(tokenizeRequestSchema);
 
-		System.out.println(response);
+		Assert.assertEquals("site.1.sample.service.mastercard.com", response.getResponseHost());
+		Assert.assertEquals("123456", response.getResponseId());
+		Assert.assertEquals("APPROVED", response.getDecision());
+		Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokenUniqueReference());
+		Assert.assertEquals("FWSPMC000000000159f71f703d2141efaf04dd26803f922b", response.getPanUniqueReference());
+		
+		
+		Assert.assertEquals("12344", response.getAuthenticationMethods().get(0).getId());
+		Assert.assertEquals("TEXT_TO_CARDHOLDER_NUMBER", response.getAuthenticationMethods().get(0).getType());
+		Assert.assertEquals("12X-XXX-XX32", response.getAuthenticationMethods().get(0).getValue());
+
+		Assert.assertEquals("12345", response.getAuthenticationMethods().get(1).getId());
+		Assert.assertEquals("CARDHOLDER_TO_CALL_AUTOMATED_NUMBER", response.getAuthenticationMethods().get(1).getType());
+		Assert.assertEquals("1-800-BANK-NUMBER", response.getAuthenticationMethods().get(1).getValue());
+		
+		Assert.assertEquals("800200c9-629d-11e3-949a-0739d27e5a66", response.getProductConfig().getBrandLogoAssetId());
+		Assert.assertEquals(null, response.getProductConfig().getIssuerLogoAssetId());
+		Assert.assertEquals(null, response.getProductConfig().getIsCoBranded());
+		Assert.assertEquals(null, response.getProductConfig().getCoBrandName());
+		Assert.assertEquals(null, response.getProductConfig().getCoBrandLogoAssetId());
+		
+		Assert.assertEquals("739d27e5-629d-11e3-949a-0800200c9a66", response.getProductConfig().getCardBackgroundCombinedAssetId());
+		Assert.assertEquals(null, response.getProductConfig().getCardBackgroundAssetId());
+		Assert.assertEquals(null, response.getProductConfig().getIconAssetId());
+		Assert.assertEquals("000000", response.getProductConfig().getForegroundColor());
+		Assert.assertEquals("Issuing Bank", response.getProductConfig().getIssuerName());
+		Assert.assertEquals("Bank Rewards MasterCard", response.getProductConfig().getShortDescription());
+		Assert.assertEquals("Bank Rewards MasterCard with the super duper rewards program", response.getProductConfig().getLongDescription());
+		Assert.assertEquals("https://bank.com/customerservice", response.getProductConfig().getCustomerServiceUrl());
+		Assert.assertEquals(null, response.getProductConfig().getCustomerServiceEmail());
+		Assert.assertEquals(null, response.getProductConfig().getCustomerServicePhoneNumber());
+		Assert.assertEquals(null, response.getProductConfig().getOnlineBankingLoginUrl());
+		Assert.assertEquals("https://bank.com/termsAndConditions", response.getProductConfig().getTermsAndConditionsUrl());
+		Assert.assertEquals("https://bank.com/privacy", response.getProductConfig().getPrivacyPolicyUrl());
+		Assert.assertEquals("123456", response.getProductConfig().getIssuerProductConfigCode());
+		
+		Assert.assertEquals("1234", response.getTokenInfo().getTokenPanSuffix());
+		Assert.assertEquals("2345", response.getTokenInfo().getAccountPanSuffix());
+		Assert.assertEquals("1022", response.getTokenInfo().getTokenExpiry());
+		Assert.assertEquals("0921", response.getTokenInfo().getAccountPanExpiry());
+		Assert.assertEquals("false", response.getTokenInfo().getDsrpCapable());
+		Assert.assertEquals("1", response.getTokenInfo().getTokenAssuranceLevel());
+		Assert.assertEquals("CREDIT", response.getTokenInfo().getProductCategory());
+
+		Assert.assertEquals("4c4ead5927f0df8117f178eea9308daa58e27abc", response.getTokenDetail().getTokenUniqueReference());
+		Assert.assertEquals(null, response.getTokenDetail().getPublicKeyFingerprint());
+		Assert.assertEquals(null, response.getTokenDetail().getEncryptedKey());
+		Assert.assertEquals(null, response.getTokenDetail().getOaepHashingAlgorithm());
+		Assert.assertEquals(null, response.getTokenDetail().getIv());
+
+		Assert.assertEquals(null, response.getTokenDetail().getEncryptedData().getAccountHolderData());
+		Assert.assertEquals("500181d9f8e0629211e3949a08002", response.getTokenDetail().getEncryptedData().getPaymentAccountReference());
+		Assert.assertEquals(null, response.getTokenDetail().getEncryptedData().getCardAccountData());
 	}
 
 	private static FundingAccountInfo buildFundingAccountInfo() {
@@ -187,30 +251,6 @@ public class ApiClientTest {
 				.postalCode("61000").country("USA");
 	}
 
-	// TODO remove
-	// test if tokenization works if we force to use the provide public key
-	// fingerprint and not the calculated one, as they suggest in doc
-	public void testingCode() throws IOException {
-
-//		String encryptedPayload = "{\"responseHost\":\"site1.payment-app-provider.com\",\"requestId\":\"123456\",\"tokenType\":\"CLOUD\",\"tokenRequestorId\":\"98765432101\",\"taskId\":\"123456\",\"fundingAccountInfo\":{\"encryptedPayload\":{\"encryptedData\":\"1b560f1428a7f1e792e49c3b4335e71167b8d3734a2e1117605d5a9aa963437568d1af7c90d009aab541b473320b09399aff8f38b3f93b0144c3f85d672cd3d841dbceb8f806218d794f2f2d5ffd502fd1f06cf1617d854369ad08070dd506a84a974eb20fc7f1ad9bb67222ebe8b820e56d2eeb5da2bd3d7e6267da78bd7d7dac1ee42663444cf0812e43226bbf2dc79c6506c9e8c0ef628ac8dffc5e8cc9d713e6028c6fb14254a73fb28731f0d195faf17c95ede081ac34b0c3f0de21e767585f0be9bde4db1d779b159e2cbed88c175846ac7f9cfa557fed4376d8fbff30c76afa5552a8bee778280c63a49b1732a96b9106a7acfe0f7b5423e63efa4ad6a2fca1928b7dbaa166d7c50e95ffc61ff81cf594c5397214340268400ac9e7da1b676c0cb957f859a0bd33c6f9fd42a47dd7683bf747aabd90035ac3a50d22eac9dfbd7dc49e48a40d9a9962b00c8397c78030232c7f0ec436c81467fdc5dd1d\",\"iv\":\"01f0347ccfaef1ffd26b276bd8c74c13\",\"encryptedKey\":\"0b88f2cff5cabb634b1debf9603e870d5a8007c26b50eebddc77f1c89ca69da948ef944587fd365e34aa57b258f7ccd91ff0c2bf75a6f706701a24b8cfc40c53bd9cd93c5843a3feff6bb75020d351c21afaedf02ab28edf0a1076d57a7fa7ff4641ad2e511a03d403eb4f2a230ef5edacf0da499e796c06f52226d63ed6e5d3f2ca0d19440ba555bf0b74ca9b7695fc287815ef2fcc8abbb1744e08bb5c8ece320eac65baddda829f3297a838b5c64561d3ec88116b3a8f044e4793267d9197038a441cd6db2ffdae8b18d1b611a1aec3ed2ba050ad5011f35f1f1d98cc3add37e9ab3394f8c328f6cc2aa8500e44b7a42db06326e3baf5a8c1ffa2c1bbb787\",\"publicKeyFingerprint\":\"3e3ff1c50fd4046b9a80c39d3d077f7313b92ea01462744bfe50b62769dbef68\",\"oaepHashingAlgorithm\":\"SHA512\"}},\"consumerLanguage\":\"en\"}";
-
-		String encryptedPayload = "{\"responseHost\":\"site1.payment-app-provider.com\",\"requestId\":\"123456\",\"tokenType\":\"CLOUD\",\"tokenRequestorId\":\"98765432101\",\"taskId\":\"123456\",\"fundingAccountInfo\":{\"encryptedPayload\":{\"encryptedData\":\"1b560f1428a7f1e792e49c3b4335e71167b8d3734a2e1117605d5a9aa963437568d1af7c90d009aab541b473320b09399aff8f38b3f93b0144c3f85d672cd3d841dbceb8f806218d794f2f2d5ffd502fd1f06cf1617d854369ad08070dd506a84a974eb20fc7f1ad9bb67222ebe8b820e56d2eeb5da2bd3d7e6267da78bd7d7dac1ee42663444cf0812e43226bbf2dc79c6506c9e8c0ef628ac8dffc5e8cc9d713e6028c6fb14254a73fb28731f0d195faf17c95ede081ac34b0c3f0de21e767585f0be9bde4db1d779b159e2cbed88c175846ac7f9cfa557fed4376d8fbff30c76afa5552a8bee778280c63a49b1732a96b9106a7acfe0f7b5423e63efa4ad6a2fca1928b7dbaa166d7c50e95ffc61ff81cf594c5397214340268400ac9e7da1b676c0cb957f859a0bd33c6f9fd42a47dd7683bf747aabd90035ac3a50d22eac9dfbd7dc49e48a40d9a9962b00c8397c78030232c7f0ec436c81467fdc5dd1d\",\"iv\":\"01f0347ccfaef1ffd26b276bd8c74c13\",\"encryptedKey\":\"0b88f2cff5cabb634b1debf9603e870d5a8007c26b50eebddc77f1c89ca69da948ef944587fd365e34aa57b258f7ccd91ff0c2bf75a6f706701a24b8cfc40c53bd9cd93c5843a3feff6bb75020d351c21afaedf02ab28edf0a1076d57a7fa7ff4641ad2e511a03d403eb4f2a230ef5edacf0da499e796c06f52226d63ed6e5d3f2ca0d19440ba555bf0b74ca9b7695fc287815ef2fcc8abbb1744e08bb5c8ece320eac65baddda829f3297a838b5c64561d3ec88116b3a8f044e4793267d9197038a441cd6db2ffdae8b18d1b611a1aec3ed2ba050ad5011f35f1f1d98cc3add37e9ab3394f8c328f6cc2aa8500e44b7a42db06326e3baf5a8c1ffa2c1bbb787\",\"publicKeyFingerprint\":\"8FC11150A7508F14BACA07285703392A399CC57C\",\"oaepHashingAlgorithm\":\"SHA512\"}},\"consumerLanguage\":\"en\"}";
-
-		Request request = new Request.Builder()
-				.url("https://sandbox.api.mastercard.com/mdes/digitization/static/1/0/tokenize").build();
-
-		Request.Builder requestBuilder = request.newBuilder();
-
-		MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-		RequestBody encryptedBody = RequestBody.create(mediaType, encryptedPayload);
-		request = requestBuilder.method("POST", encryptedBody).header("Content-Length", "1624").build();
-
-		ApiClient apiClient = buildApiClient();
-
-		Response response = apiClient.getHttpClient().newCall(request).execute();
-		System.out.println(response);
-	}
-
 	@Test
 	public void getAssetTest() throws ApiException {
 		ApiClient apiClient = buildApiClient();
@@ -223,8 +263,7 @@ public class ApiClientTest {
 				response.getMediaContents().get(0).getData().substring(0, 100));
 	}
 
-	@Ignore
-	@Test // TODO it is failing
+	@Test  
 	public void getDigitalAssets() throws ApiException {
 		ApiClient apiClient = buildApiClient();
 
@@ -235,9 +274,9 @@ public class ApiClientTest {
 
 		GetDigitalAssetsRequestSchemaEncryptedPayload encryptedPayload = new GetDigitalAssetsRequestSchemaEncryptedPayload();
 		encryptedPayload.setEncryptedData(encryptedData);
-//		encryptedPayload.setOaepHashingAlgorithm("SHA512");
-//		encryptedPayload.setEncryptedKey("A1B2C3D4E5F6112233445566");
-//		encryptedPayload.setPublicKeyFingerprint("4c4ead5927f0df8117f178eea9308daa58e27c2b");
+		encryptedPayload.setOaepHashingAlgorithm("SHA512");
+		encryptedPayload.setEncryptedKey("A1B2C3D4E5F6112233445566");
+		encryptedPayload.setPublicKeyFingerprint("4c4ead5927f0df8117f178eea9308daa58e27c2b");
 
 		GetDigitalAssetsRequestSchema requestSchema = new GetDigitalAssetsRequestSchema();
 		requestSchema.setResponseHost("site2.payment-app-provider.com");
@@ -245,8 +284,21 @@ public class ApiClientTest {
 		requestSchema.setEncryptedPayload(encryptedPayload);
 
 		GetDigitalAssetsResponseSchema response = requestApi.getDigitalAssets(requestSchema);
-
-		fail();
+		
+		Assert.assertNotNull(response.getResponseId());
+		Assert.assertEquals(null, response.getResponseHost());
+		Assert.assertEquals(null, response.getBrandLogoAssetId());
+		Assert.assertEquals(null, response.getIssuerLogoAssetId());
+		Assert.assertEquals(null, response.getIsCoBranded());
+		Assert.assertEquals(null, response.getCoBrandName());
+		Assert.assertEquals(null, response.getCoBrandLogoAssetId());
+		Assert.assertEquals(null, response.getCardBackgroundCombinedAssetId());
+		Assert.assertEquals(null, response.getCardBackgroundAssetId());
+		Assert.assertEquals(null, response.getIconAssetId());
+		Assert.assertEquals(null, response.getForegroundColor());
+		Assert.assertEquals(null, response.getIssuerName());
+		Assert.assertEquals(null, response.getShortDescription());
+		Assert.assertEquals(null, response.getLongDescription());
 	}
 
 	@Test
@@ -272,8 +324,7 @@ public class ApiClientTest {
 				response.getTokens().get(0).getTokenUniqueReference());
 		Assert.assertEquals("DEACTIVATED", response.getTokens().get(0).getStatus());
 		Assert.assertEquals(null, response.getTokens().get(0).getSuspendedBy());
-		Assert.assertEquals("2019-10-09",
-				response.getTokens().get(0).getStatusTimestamp().substring(0, "2019-10-09".length()));
+		Assert.assertNotNull(response.getTokens().get(0).getStatusTimestamp());
 	}
 
 	@Test
@@ -294,25 +345,40 @@ public class ApiClientTest {
 		Assert.assertEquals("PENDING", response.getStatus());
 	}
 
-	@Ignore
-	@Test // TODO coding not ended.
+	@Test 
 	public void searchTokensTest() throws ApiException {
-
-		ApiClient apiClient = buildApiClient();
-
-		SearchTokensApi requestApi = new SearchTokensApi(apiClient);
 
 		SearchTokensRequestSchema searchTokensRequestSchema = new SearchTokensRequestSchema();
 		searchTokensRequestSchema.setRequestId("123456");
 		searchTokensRequestSchema.setResponseHost("site2.payment-app-provider.com");
+		searchTokensRequestSchema.setTokenRequestorId("98765432101");		
+		searchTokensRequestSchema.setFundingAccountInfo(buildFundingAccountInfo());
 
-		FundingAccountInfo fundingAccountInfo = new FundingAccountInfo();
+		SearchTokensResponseSchema response = new SearchTokensApi(buildApiClient()).searchTokens(searchTokensRequestSchema);
+		
+		Assert.assertEquals("site.1.sample.service.mastercard.com", response.getResponseHost());
+		Assert.assertEquals("123456", response.getResponseId());
+		
+		Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokens().get(0).getTokenUniqueReference());
+		Assert.assertEquals("ACTIVE", response.getTokens().get(0).getStatus());
+		Assert.assertEquals(null, response.getTokens().get(0).getSuspendedBy());
+		Assert.assertEquals("2017-09-05T00:00:00.000Z", response.getTokens().get(0).getStatusTimestamp());
+		Assert.assertEquals(null, response.getTokens().get(0).getProductConfig());
+		Assert.assertEquals(null, response.getTokens().get(0).getTokenInfo());
 
-		searchTokensRequestSchema.setFundingAccountInfo(fundingAccountInfo);
-
-		SearchTokensResponseSchema response = requestApi.searchTokens(searchTokensRequestSchema);
-
-		fail();
+		Assert.assertEquals("DWSPMC00000000032d72d4ffcb2f4136a0532d32d72d4fcb", response.getTokens().get(1).getTokenUniqueReference());
+		Assert.assertEquals("ACTIVE", response.getTokens().get(1).getStatus());
+		Assert.assertEquals(null, response.getTokens().get(1).getSuspendedBy());
+		Assert.assertEquals("2017-09-06T00:00:00.000Z", response.getTokens().get(1).getStatusTimestamp());
+		Assert.assertEquals(null, response.getTokens().get(1).getProductConfig());
+		Assert.assertEquals(null, response.getTokens().get(1).getTokenInfo());
+		
+		Assert.assertEquals("DWSPMC000000000fcb2f4136b2f4136a0532d2f4136a0532", response.getTokens().get(2).getTokenUniqueReference());
+		Assert.assertEquals("SUSPENDED", response.getTokens().get(2).getStatus());
+		Assert.assertEquals("TOKEN_REQUESTOR", response.getTokens().get(2).getSuspendedBy().get(0));
+		Assert.assertEquals("2017-09-07T00:00:00.000Z", response.getTokens().get(2).getStatusTimestamp());
+		Assert.assertEquals(null, response.getTokens().get(2).getProductConfig());
+		Assert.assertEquals(null, response.getTokens().get(2).getTokenInfo());
 	}
 
 	@Test
@@ -352,24 +418,19 @@ public class ApiClientTest {
 
 		TransactResponseSchema response = transact.createTransact(transactRequestSchema);
 
-		// Assert.assertEquals("4fd19399-8c77-48ac-9105-7380ff72a198",
-		// response.getResponseId()); always it returns different
+		Assert.assertNotNull(response.getResponseId());  
 		Assert.assertEquals(null, response.getResponseHost());
 		Assert.assertEquals(null, response.getEncryptedPayload().getPublicKeyFingerprint());
 		Assert.assertEquals(null, response.getEncryptedPayload().getEncryptedKey());
 		Assert.assertEquals(null, response.getEncryptedPayload().getOaepHashingAlgorithm());
 		Assert.assertEquals(null, response.getEncryptedPayload().getIv());
 		Assert.assertEquals("5204240500000505", response.getEncryptedPayload().getEncryptedData().getAccountNumber());
-		Assert.assertEquals("20191109", response.getEncryptedPayload().getEncryptedData().getApplicationExpiryDate());
+		Assert.assertNotNull(response.getEncryptedPayload().getEncryptedData().getApplicationExpiryDate());
 		Assert.assertEquals("00", response.getEncryptedPayload().getEncryptedData().getPanSequenceNumber());
 		Assert.assertEquals("5204240500000505D19022010000000000000F",
 				response.getEncryptedPayload().getEncryptedData().getTrack2Equivalent());
 		Assert.assertEquals("AF1ajnoLKKj8AAKhssPUGgADFA==",
 				response.getEncryptedPayload().getEncryptedData().getDe48se43Data());
-	}
-
-	public static void main(String[] args) throws ApiException {
-		new ApiClientTest().getAssetTest();
 	}
 
 }

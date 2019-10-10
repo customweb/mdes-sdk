@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/customweb/mdes-sdk.svg?branch=master)](https://travis-ci.org/customweb/mdes-sdk)
-
 # wallee-mdes-sdk
 
 ## Requirements
