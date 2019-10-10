@@ -33,6 +33,13 @@
 		<url>https://github.com//</url>
 	</scm>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<prerequisites>
 		<maven>2.2.0</maven>
 	</prerequisites>
