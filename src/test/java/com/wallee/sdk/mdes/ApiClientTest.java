@@ -23,6 +23,10 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.mastercard.developer.encryption.EncryptionException;
+import com.mastercard.developer.encryption.FieldLevelEncryptionConfig;
+import com.mastercard.developer.encryption.FieldLevelEncryptionConfig.FieldValueEncoding;
+import com.mastercard.developer.encryption.FieldLevelEncryptionConfigBuilder;
 import com.mastercard.developer.utils.EncryptionUtils;
 import com.wallee.sdk.mdes.ApiClient.ApiClientConfiguration;
 import com.wallee.sdk.mdes.api.DeleteApi;
@@ -139,6 +143,28 @@ public class ApiClientTest {
 		}
 
 	}
+	
+		private static FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
+		try {
+			return FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
+				    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
+				    .withEncryptionPath("$.encryptedPayload.encryptedData", "$.encryptedPayload")
+				    .withDecryptionPath("$.tokenDetail", "$.tokenDetail.encryptedData")
+				    .withDecryptionPath("$.encryptedPayload", "$.encryptedPayload.encryptedData")
+				    .withEncryptionCertificate(publicKeyEncryptionCertificate)
+				    .withDecryptionKey(decryptionPrivateKey)
+				    .withOaepPaddingDigestAlgorithm("SHA-512")
+				    .withEncryptedValueFieldName("encryptedData")
+				    .withEncryptedKeyFieldName("encryptedKey")
+				    .withIvFieldName("iv")
+				    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
+				    .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
+				    .withFieldValueEncoding(FieldValueEncoding.HEX)
+				    .build();
+		} catch (EncryptionException e) {
+			throw new RuntimeException(e);
+		}
+    }
 
 	private ApiClient buildApiClient() {
 		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
@@ -147,11 +173,12 @@ public class ApiClientTest {
 				.setDecryptionPrivateKey(decryptionPrivateKey)//
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
 				.setConsumerKey(consumerKey)//
+				.setBuildFieldLevelEncryptionConfig(ApiClientTest::buildFieldLevelEncryptionConfig)
 				.build();
 
 		return new ApiClient(apiClientConfiguration);
 	}
-
+	
 	@Test 
 	public void tokenizeTest() throws ApiException {
 
@@ -207,7 +234,7 @@ public class ApiClientTest {
 		
 		Assert.assertEquals("1234", response.getTokenInfo().getTokenPanSuffix());
 		Assert.assertEquals("2345", response.getTokenInfo().getAccountPanSuffix());
-		Assert.assertEquals("1022", response.getTokenInfo().getTokenExpiry());
+		Assert.assertNotNull(response.getTokenInfo().getTokenExpiry());
 		Assert.assertEquals("0921", response.getTokenInfo().getAccountPanExpiry());
 		Assert.assertEquals("false", response.getTokenInfo().getDsrpCapable());
 		Assert.assertEquals("1", response.getTokenInfo().getTokenAssuranceLevel());
