@@ -289,7 +289,7 @@ public class ApiClient {
 				    .withEncryptedKeyFieldName("encryptedKey")
 				    .withIvFieldName("iv")
 				    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
-				    .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
+				    .withEncryptionKeyFingerprintFieldName("publicKeyFingerprint")
 				    .withFieldValueEncoding(FieldValueEncoding.HEX)
 				    .build();
 		} catch (EncryptionException e) {
