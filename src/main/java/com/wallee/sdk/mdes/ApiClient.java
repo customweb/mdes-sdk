@@ -258,7 +258,7 @@ public class ApiClient {
 			}
  
 
-			protected Builder setBuildFieldLevelEncryptionConfig(
+			public Builder setBuildFieldLevelEncryptionConfig(
 					BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> buildFieldLevelEncryptionConfig) {
 				this.buildFieldLevelEncryptionConfig = buildFieldLevelEncryptionConfig;
 				return this;
