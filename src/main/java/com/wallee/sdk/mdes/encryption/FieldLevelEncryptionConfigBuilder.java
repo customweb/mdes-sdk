@@ -79,7 +79,7 @@ public final class FieldLevelEncryptionConfigBuilder {
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionKeyFingerprint}.
      * 
-     * @param encryptionCertificateFingerprint encryption certificate fingerprint
+     * @param encryptionKeyFingerprint encryption certificate fingerprint
      * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionKeyFingerprint(String encryptionKeyFingerprint) {
