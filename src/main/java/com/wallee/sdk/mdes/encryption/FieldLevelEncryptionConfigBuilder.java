@@ -20,6 +20,10 @@ import static java.security.spec.MGF1ParameterSpec.SHA512;
 /**
  * A builder class for {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig}.
  */
+/**
+ * @author rodriguez
+ *
+ */
 public final class FieldLevelEncryptionConfigBuilder {
 
     private Certificate encryptionCertificate;
@@ -48,6 +52,8 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * Get an instance of the builder.
+     * 
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public static FieldLevelEncryptionConfigBuilder aFieldLevelEncryptionConfig() {
         return new FieldLevelEncryptionConfigBuilder();
@@ -55,14 +61,19 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionCertificate}.
+     * @param encryptionCertificate encryption certificate
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionCertificate(Certificate encryptionCertificate) {
         this.encryptionCertificate = encryptionCertificate;
         return this;
     }
-
+    
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionCertificateFingerprint}.
+     * 
+     * @param encryptionCertificateFingerprint encryption certificate fingerprint
+     * @return  {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionCertificateFingerprint(String encryptionCertificateFingerprint) {
         this.encryptionCertificateFingerprint = encryptionCertificateFingerprint;
@@ -71,14 +82,20 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionKeyFingerprint}.
+     * 
+     * @param encryptionCertificateFingerprint encryption certificate fingerprint
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionKeyFingerprint(String encryptionKeyFingerprint) {
         this.encryptionKeyFingerprint = encryptionKeyFingerprint;
         return this;
     }
 
-    /*
+    /**
      * Custom method
+     * 
+     * @param privateKeyProvider private key provider
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withDecryptionPrivateKeyProvider(IPrivateKeyProvider privateKeyProvider) {
         this.decryptionPrivateKeyProvider = privateKeyProvider;
@@ -87,14 +104,22 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionPaths}.
+     * 
+     * @param jsonPathIn json path in 
+     * @param jsonPathOut json paht out
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionPath(String jsonPathIn, String jsonPathOut) {
         this.encryptionPaths.put(jsonPathIn, jsonPathOut);
         return this;
     }
-
+ 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#decryptionPaths}.
+     * 
+     * @param jsonPathIn json path in
+     * @param jsonPathOut json path out
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withDecryptionPath(String jsonPathIn, String jsonPathOut) {
         this.decryptionPaths.put(jsonPathIn, jsonPathOut);
@@ -103,6 +128,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#oaepPaddingDigestAlgorithm}.
+     * 
+     * @param oaepPaddingDigestAlgorithm oaep padding digest algorithm
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withOaepPaddingDigestAlgorithm(String oaepPaddingDigestAlgorithm) {
         this.oaepPaddingDigestAlgorithm = oaepPaddingDigestAlgorithm;
@@ -111,14 +139,20 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#ivFieldName}.
+     * 
+     * @param ivFieldName iv field name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withIvFieldName(String ivFieldName) {
         this.ivFieldName = ivFieldName;
         return this;
     }
-
+ 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#oaepPaddingDigestAlgorithmFieldName}.
+     *  
+     * @param oaepPaddingDigestAlgorithmFieldName oaep padding digest algorithm field name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withOaepPaddingDigestAlgorithmFieldName(String oaepPaddingDigestAlgorithmFieldName) {
         this.oaepPaddingDigestAlgorithmFieldName = oaepPaddingDigestAlgorithmFieldName;
@@ -127,6 +161,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptedKeyFieldName}.
+     * 
+     * @param encryptedKeyFieldName encryption key fieldname
+     * @return  {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptedKeyFieldName(String encryptedKeyFieldName) {
         this.encryptedKeyFieldName = encryptedKeyFieldName;
@@ -135,6 +172,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptedValueFieldName}.
+     * 
+     * @param encryptedValueFieldName encryption value field name
+     * @return  {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptedValueFieldName(String encryptedValueFieldName) {
         this.encryptedValueFieldName = encryptedValueFieldName;
@@ -143,6 +183,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionCertificateFingerprintFieldName}.
+     * 
+     * @param encryptionCertificateFingerprintFieldName encryption certificate fingerprint fieldname
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionCertificateFingerprintFieldName(String encryptionCertificateFingerprintFieldName) {
         this.encryptionCertificateFingerprintFieldName = encryptionCertificateFingerprintFieldName;
@@ -151,6 +194,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionKeyFingerprintFieldName}.
+     * 
+     * @param encryptionKeyFingerprintFieldName encryption key fingerprint fieldname
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionKeyFingerprintFieldName(String encryptionKeyFingerprintFieldName) {
         this.encryptionKeyFingerprintFieldName = encryptionKeyFingerprintFieldName;
@@ -159,6 +205,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#fieldValueEncoding}.
+     * 
+     * @param fieldValueEncoding field value encoding
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withFieldValueEncoding(FieldValueEncoding fieldValueEncoding) {
         this.fieldValueEncoding = fieldValueEncoding;
@@ -167,6 +216,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#ivHeaderName}.
+     * 
+     * @param ivHeaderName iv header name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withIvHeaderName(String ivHeaderName) {
         this.ivHeaderName = ivHeaderName;
@@ -175,6 +227,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#oaepPaddingDigestAlgorithmHeaderName}.
+     * 
+     * @param oaepPaddingDigestAlgorithmHeaderName oeape padding digest algorithm header name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withOaepPaddingDigestAlgorithmHeaderName(String oaepPaddingDigestAlgorithmHeaderName) {
         this.oaepPaddingDigestAlgorithmHeaderName = oaepPaddingDigestAlgorithmHeaderName;
@@ -183,6 +238,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptedKeyHeaderName}.
+     * 
+     * @param encryptedKeyHeaderName  encryption key header name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptedKeyHeaderName(String encryptedKeyHeaderName) {
         this.encryptedKeyHeaderName = encryptedKeyHeaderName;
@@ -191,6 +249,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionCertificateFingerprintHeaderName}.
+     * 
+     * @param encryptionCertificateFingerprintHeaderName encryption certificate fingerprint header name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionCertificateFingerprintHeaderName(String encryptionCertificateFingerprintHeaderName) {
         this.encryptionCertificateFingerprintHeaderName = encryptionCertificateFingerprintHeaderName;
@@ -199,6 +260,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * See: {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig#encryptionKeyFingerprintHeaderName}.
+     * 
+     * @param encryptionKeyFingerprintHeaderName encrytion key fingerprint header name
+     * @return {@link FieldLevelEncryptionConfigBuilder}
      */
     public FieldLevelEncryptionConfigBuilder withEncryptionKeyFingerprintHeaderName(String encryptionKeyFingerprintHeaderName) {
         this.encryptionKeyFingerprintHeaderName = encryptionKeyFingerprintHeaderName;
@@ -207,7 +271,9 @@ public final class FieldLevelEncryptionConfigBuilder {
 
     /**
      * Build a {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig}.
-     * @throws EncryptionException
+     * 
+     * @return{@link FieldLevelEncryptionConfigBuilder}
+     * @throws EncryptionException encryption exception
      */
     public FieldLevelEncryptionConfig build() throws EncryptionException {
 

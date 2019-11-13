@@ -40,6 +40,7 @@ public class FieldLevelEncryption {
     /**
      * Specify the JSON engine to be used.
      * @param jsonEngine A {@link com.mastercard.developer.json.JsonEngine} instance
+     * @return Configuration configuration
      */
     public static synchronized Configuration withJsonEngine(JsonEngine jsonEngine) {
         FieldLevelEncryption.jsonEngine = jsonEngine;
@@ -55,7 +56,7 @@ public class FieldLevelEncryption {
      * @param payload A JSON string
      * @param config A {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig} instance
      * @return The updated payload
-     * @throws EncryptionException
+     * @throws EncryptionException encryption error
      */
     public static String encryptPayload(String payload, FieldLevelEncryptionConfig config) throws EncryptionException {
         return encryptPayload(payload, config, null);
@@ -67,7 +68,7 @@ public class FieldLevelEncryption {
      * @param config A {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig} instance
      * @param params A {@link FieldLevelEncryptionParams} instance
      * @return The updated payload
-     * @throws EncryptionException
+     * @throws EncryptionException encryption exception
      */
     public static String encryptPayload(String payload, FieldLevelEncryptionConfig config, FieldLevelEncryptionParams params) throws EncryptionException {
         try {
@@ -93,7 +94,7 @@ public class FieldLevelEncryption {
      * @param payload A JSON string
      * @param config A {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig} instance
      * @return The updated payload
-     * @throws EncryptionException
+     * @throws EncryptionException encryption exception
      */
     public static String decryptPayload(String payload, FieldLevelEncryptionConfig config) throws EncryptionException {
         return decryptPayload(payload, config, null);
@@ -105,7 +106,7 @@ public class FieldLevelEncryption {
      * @param config A {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig} instance
      * @param params A {@link FieldLevelEncryptionParams} instance
      * @return The updated payload
-     * @throws EncryptionException
+     * @throws EncryptionException encryption exception
      */
     public static String decryptPayload(String payload, FieldLevelEncryptionConfig config, FieldLevelEncryptionParams params) throws EncryptionException {
         try {

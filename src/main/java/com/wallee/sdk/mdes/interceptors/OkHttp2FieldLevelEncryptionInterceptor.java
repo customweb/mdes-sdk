@@ -21,6 +21,7 @@ public class OkHttp2FieldLevelEncryptionInterceptor implements Interceptor {
 
     private final FieldLevelEncryptionConfig config;
 
+    @SuppressWarnings("javadoc")
     public OkHttp2FieldLevelEncryptionInterceptor(FieldLevelEncryptionConfig config) {
         this.config = config;
     }

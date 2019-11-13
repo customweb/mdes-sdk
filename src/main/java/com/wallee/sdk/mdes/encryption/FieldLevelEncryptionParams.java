@@ -36,6 +36,7 @@ public final class FieldLevelEncryptionParams {
     private IvParameterSpec ivParameterSpec;
     private String fingerprint;
     
+    @SuppressWarnings("javadoc")
     public FieldLevelEncryptionParams(String ivValue, String encryptedKeyValue, String oaepPaddingDigestAlgorithmValue, FieldLevelEncryptionConfig config) {
         this.ivValue = ivValue;
         this.encryptedKeyValue = encryptedKeyValue;
@@ -43,6 +44,7 @@ public final class FieldLevelEncryptionParams {
         this.config = config;
     }
     
+    @SuppressWarnings("javadoc")
     public FieldLevelEncryptionParams(String ivValue, String encryptedKeyValue, String oaepPaddingDigestAlgorithmValue, FieldLevelEncryptionConfig config, String fingerprint) {
     	this(ivValue, encryptedKeyValue, oaepPaddingDigestAlgorithmValue, config);
         this.fingerprint = fingerprint;
@@ -53,7 +55,7 @@ public final class FieldLevelEncryptionParams {
      * Generate encryption parameters.
      * @param config A {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig} instance
      * @return A {@link com.mastercard.developer.encryption.FieldLevelEncryptionParams} instance
-     * @throws EncryptionException
+     * @throws EncryptionException encryption exception
      */
     public static FieldLevelEncryptionParams generate(FieldLevelEncryptionConfig config) throws EncryptionException {
 
@@ -79,18 +81,22 @@ public final class FieldLevelEncryptionParams {
         return params;
     }
 
+    @SuppressWarnings("javadoc")
     public String getIvValue() {
         return ivValue;
     }
 
+    @SuppressWarnings("javadoc")
     public String getEncryptedKeyValue() {
         return encryptedKeyValue;
     }
 
+    @SuppressWarnings("javadoc")
     public String getOaepPaddingDigestAlgorithmValue() {
         return oaepPaddingDigestAlgorithmValue;
     }
 
+    @SuppressWarnings("javadoc")
     public Key getSecretKey() throws EncryptionException {
         try {
             if (secretKey != null) {
@@ -107,6 +113,7 @@ public final class FieldLevelEncryptionParams {
         }
     }
 
+    @SuppressWarnings("javadoc")
     public IvParameterSpec getIvSpec() throws EncryptionException {
         try {
             if (ivParameterSpec != null) {
