@@ -24,9 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.mastercard.developer.encryption.EncryptionException;
-import com.mastercard.developer.encryption.FieldLevelEncryptionConfig;
-import com.mastercard.developer.encryption.FieldLevelEncryptionConfig.FieldValueEncoding;
-import com.mastercard.developer.encryption.FieldLevelEncryptionConfigBuilder;
 import com.mastercard.developer.utils.EncryptionUtils;
 import com.wallee.sdk.mdes.ApiClient.ApiClientConfiguration;
 import com.wallee.sdk.mdes.api.DeleteApi;
@@ -37,6 +34,8 @@ import com.wallee.sdk.mdes.api.GetTokenApi;
 import com.wallee.sdk.mdes.api.SearchTokensApi;
 import com.wallee.sdk.mdes.api.TokenizeApi;
 import com.wallee.sdk.mdes.api.TransactApi;
+import com.wallee.sdk.mdes.encryption.FieldLevelEncryptionConfig;
+import com.wallee.sdk.mdes.encryption.FieldLevelEncryptionConfigBuilder;
 import com.wallee.sdk.mdes.model.AccountHolderData;
 import com.wallee.sdk.mdes.model.AssetResponseSchema;
 import com.wallee.sdk.mdes.model.BillingAddress;
@@ -144,7 +143,7 @@ public class ApiClientTest {
 
 	}
 	
-		private static FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
+	private static FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
 		try {
 			return FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
 				    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
@@ -152,14 +151,20 @@ public class ApiClientTest {
 				    .withDecryptionPath("$.tokenDetail", "$.tokenDetail.encryptedData")
 				    .withDecryptionPath("$.encryptedPayload", "$.encryptedPayload.encryptedData")
 				    .withEncryptionCertificate(publicKeyEncryptionCertificate)
-				    .withDecryptionKey(decryptionPrivateKey)
+				    .withDecryptionPrivateKeyProvider((testFingerprint) -> {
+				    	final String SANDBOX_FINGERPRINT = "3e3ff1c50fd4046b9a80c39d3d077f7313b92ea01462744bfe50b62769dbef68";
+				    	if (SANDBOX_FINGERPRINT.equals(testFingerprint)) {
+				    		return decryptionPrivateKey;
+				    	}
+				    	throw new RuntimeException("fingerprint: '" + testFingerprint + "' not found.");
+				     })
 				    .withOaepPaddingDigestAlgorithm("SHA-512")
 				    .withEncryptedValueFieldName("encryptedData")
 				    .withEncryptedKeyFieldName("encryptedKey")
 				    .withIvFieldName("iv")
 				    .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
 				    .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
-				    .withFieldValueEncoding(FieldValueEncoding.HEX)
+				    .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX)
 				    .build();
 		} catch (EncryptionException e) {
 			throw new RuntimeException(e);
@@ -173,7 +178,7 @@ public class ApiClientTest {
 				.setDecryptionPrivateKey(decryptionPrivateKey)//
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
 				.setConsumerKey(consumerKey)//
-				.setBuildFieldLevelEncryptionConfig(ApiClientTest::buildFieldLevelEncryptionConfig)
+				.setFieldLevelEncryptionConfig(buildFieldLevelEncryptionConfig(publicKeyEncryptionCertificate, decryptionPrivateKey))//
 				.build();
 
 		return new ApiClient(apiClientConfiguration);

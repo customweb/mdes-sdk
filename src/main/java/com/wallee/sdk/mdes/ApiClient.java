@@ -43,7 +43,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,8 +54,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import com.mastercard.developer.encryption.FieldLevelEncryptionConfig;
-import com.mastercard.developer.interceptors.OkHttp2FieldLevelEncryptionInterceptor;
 import com.mastercard.developer.interceptors.OkHttp2OAuth1Interceptor;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -75,9 +72,12 @@ import com.wallee.sdk.mdes.auth.ApiKeyAuth;
 import com.wallee.sdk.mdes.auth.Authentication;
 import com.wallee.sdk.mdes.auth.HttpBasicAuth;
 import com.wallee.sdk.mdes.auth.OAuth;
+import com.wallee.sdk.mdes.encryption.FieldLevelEncryptionConfig;
+import com.wallee.sdk.mdes.interceptors.OkHttp2FieldLevelEncryptionInterceptor;
 
 import okio.BufferedSink;
 import okio.Okio;
+ 
 
 
 
@@ -171,7 +171,7 @@ public class ApiClient {
 	    private final Certificate publicKeyEncryptionCertificate; 
 	    private final String consumerKey;
 	    private final Proxy proxy;
-	    private final BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> buildFieldLevelEncryptionConfig;
+	    private final FieldLevelEncryptionConfig fieldLevelEncryptionConfig;
 	    
 		private ApiClientConfiguration(//
 				EndPoint endpoint, //
@@ -179,7 +179,7 @@ public class ApiClient {
 				PrivateKey decryptionPrivateKey,//
 				Certificate publicKeyEncryptionCertificate, //
 				String consumerKey, //
-				BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> buildFieldLevelEncryptionConfig, //
+				FieldLevelEncryptionConfig fieldLevelEncryptionConfig, //
 				Proxy proxy)// 
 		{
 			this.endpoint = Objects.requireNonNull(endpoint, "endpoint");
@@ -187,7 +187,7 @@ public class ApiClient {
 			this.decryptionPrivateKey = Objects.requireNonNull(decryptionPrivateKey, "decryptionPrivateKey");
 			this.publicKeyEncryptionCertificate = Objects.requireNonNull(publicKeyEncryptionCertificate, "publicKeyEncryptionCertificate");
 			this.consumerKey = Objects.requireNonNull(consumerKey, "consumerKey");
-			this.buildFieldLevelEncryptionConfig = Objects.requireNonNull(buildFieldLevelEncryptionConfig, "buildFieldLevelEncryptionConfig");
+			this.fieldLevelEncryptionConfig = Objects.requireNonNull(fieldLevelEncryptionConfig, "fieldLevelEncryptionConfig");
 
 			this.proxy = proxy; // optional parameter	 
 		}
@@ -211,8 +211,8 @@ public class ApiClient {
 		public String getConsumerKey() {
 			return consumerKey;
 		}
-		public BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> getBuildFieldLevelEncryptionConfig() {
-			return buildFieldLevelEncryptionConfig;
+		public FieldLevelEncryptionConfig getFieldLevelEncryptionConfig() {
+			return fieldLevelEncryptionConfig;
 		}
 
 		public Proxy getProxy() {
@@ -229,7 +229,7 @@ public class ApiClient {
 		    private PrivateKey decryptionPrivateKey; 
 		    private Certificate publicKeyEncryptionCertificate; 
 		    private String consumerKey;
-		    private BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> buildFieldLevelEncryptionConfig;
+		    private FieldLevelEncryptionConfig fieldLevelEncryptionConfig;
 		    private Proxy proxy;
 		    
 			public Builder setEndpoint(EndPoint endpoint) {
@@ -258,9 +258,8 @@ public class ApiClient {
 			}
  
 
-			public Builder setBuildFieldLevelEncryptionConfig(
-					BiFunction<Certificate, PrivateKey, FieldLevelEncryptionConfig> buildFieldLevelEncryptionConfig) {
-				this.buildFieldLevelEncryptionConfig = buildFieldLevelEncryptionConfig;
+			public Builder setFieldLevelEncryptionConfig(FieldLevelEncryptionConfig fieldLevelEncryptionConfig) {
+				this.fieldLevelEncryptionConfig = fieldLevelEncryptionConfig;
 				return this;
 			}
 
@@ -270,7 +269,7 @@ public class ApiClient {
 			}
 			
 			public ApiClientConfiguration build() {
-				return new ApiClientConfiguration(endpoint, signingKey, decryptionPrivateKey, publicKeyEncryptionCertificate, consumerKey, buildFieldLevelEncryptionConfig, proxy);
+				return new ApiClientConfiguration(endpoint, signingKey, decryptionPrivateKey, publicKeyEncryptionCertificate, consumerKey, fieldLevelEncryptionConfig, proxy);
 			}
 		}
     }     
@@ -285,9 +284,7 @@ public class ApiClient {
     	
     	// 1) before should run the Encryption interceptor.
     	httpClient.interceptors().add(new OkHttp2FieldLevelEncryptionInterceptor(
-    			apiClientConfiguration.getBuildFieldLevelEncryptionConfig().apply(
-	    			apiClientConfiguration.getPublicKeyEncryptionCertificate(), 
-	    			apiClientConfiguration.getDecryptionPrivateKey())));
+    			apiClientConfiguration.getFieldLevelEncryptionConfig()));
     	
     	// 2) after should run the Authentification interceptor.
     	httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(
