@@ -1,6 +1,8 @@
 package com.wallee.sdk.mdes.encryption;
 
 import java.security.PrivateKey;
+import java.security.PublicKey;
+
 
 /**
  * {@link PrivateKey} provider based on its corresponding {@link PublicKey} fingerprint.
