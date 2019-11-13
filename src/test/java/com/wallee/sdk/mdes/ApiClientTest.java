@@ -175,7 +175,6 @@ public class ApiClientTest {
 		ApiClientConfiguration apiClientConfiguration = ApiClientConfiguration.building()//
 				.setEndpoint(ApiClient.EndPoint.SANDBOX)//
 				.setSigningKey(signingKey)//
-				.setDecryptionPrivateKey(decryptionPrivateKey)//
 				.setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
 				.setConsumerKey(consumerKey)//
 				.setFieldLevelEncryptionConfig(buildFieldLevelEncryptionConfig(publicKeyEncryptionCertificate, decryptionPrivateKey))//

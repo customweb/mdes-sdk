@@ -167,7 +167,6 @@ public class ApiClient {
     public static class ApiClientConfiguration {
     	private final EndPoint endpoint;
     	private final PrivateKey signingKey; 
-	    private final PrivateKey decryptionPrivateKey; 
 	    private final Certificate publicKeyEncryptionCertificate; 
 	    private final String consumerKey;
 	    private final Proxy proxy;
@@ -176,7 +175,6 @@ public class ApiClient {
 		private ApiClientConfiguration(//
 				EndPoint endpoint, //
 				PrivateKey signingKey, //
-				PrivateKey decryptionPrivateKey,//
 				Certificate publicKeyEncryptionCertificate, //
 				String consumerKey, //
 				FieldLevelEncryptionConfig fieldLevelEncryptionConfig, //
@@ -184,7 +182,6 @@ public class ApiClient {
 		{
 			this.endpoint = Objects.requireNonNull(endpoint, "endpoint");
 			this.signingKey = Objects.requireNonNull(signingKey, "signingKey");
-			this.decryptionPrivateKey = Objects.requireNonNull(decryptionPrivateKey, "decryptionPrivateKey");
 			this.publicKeyEncryptionCertificate = Objects.requireNonNull(publicKeyEncryptionCertificate, "publicKeyEncryptionCertificate");
 			this.consumerKey = Objects.requireNonNull(consumerKey, "consumerKey");
 			this.fieldLevelEncryptionConfig = Objects.requireNonNull(fieldLevelEncryptionConfig, "fieldLevelEncryptionConfig");
@@ -198,10 +195,6 @@ public class ApiClient {
 
 		public PrivateKey getSigningKey() {
 			return signingKey;
-		}
-
-		public PrivateKey getDecryptionPrivateKey() {
-			return decryptionPrivateKey;
 		}
 
 		public Certificate getPublicKeyEncryptionCertificate() {
@@ -226,7 +219,6 @@ public class ApiClient {
 		public static class Builder {
 	    	private EndPoint endpoint;
 	    	private PrivateKey signingKey; 
-		    private PrivateKey decryptionPrivateKey; 
 		    private Certificate publicKeyEncryptionCertificate; 
 		    private String consumerKey;
 		    private FieldLevelEncryptionConfig fieldLevelEncryptionConfig;
@@ -239,11 +231,6 @@ public class ApiClient {
 
 			public Builder setSigningKey(PrivateKey signingKey) {
 				this.signingKey = signingKey;
-				return this;
-			}
-
-			public Builder setDecryptionPrivateKey(PrivateKey decryptionPrivateKey) {
-				this.decryptionPrivateKey = decryptionPrivateKey;
 				return this;
 			}
 
@@ -269,7 +256,7 @@ public class ApiClient {
 			}
 			
 			public ApiClientConfiguration build() {
-				return new ApiClientConfiguration(endpoint, signingKey, decryptionPrivateKey, publicKeyEncryptionCertificate, consumerKey, fieldLevelEncryptionConfig, proxy);
+				return new ApiClientConfiguration(endpoint, signingKey, publicKeyEncryptionCertificate, consumerKey, fieldLevelEncryptionConfig, proxy);
 			}
 		}
     }     
