@@ -20,10 +20,6 @@ import static java.security.spec.MGF1ParameterSpec.SHA512;
 /**
  * A builder class for {@link com.mastercard.developer.encryption.FieldLevelEncryptionConfig}.
  */
-/**
- * @author rodriguez
- *
- */
 public final class FieldLevelEncryptionConfigBuilder {
 
     private Certificate encryptionCertificate;
