@@ -83,8 +83,6 @@ public class JSON {
 
     /**
      * JSON constructor.
-     *
-     * @param apiClient An instance of ApiClient
      */
     public JSON() {
         /*
