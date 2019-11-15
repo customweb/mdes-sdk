@@ -13,6 +13,17 @@
 
 package com.wallee.sdk.mdes;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.TimeZone;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -27,31 +38,98 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.Type;
-import java.util.Date;
-
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-
 public class JSON {
-    private ApiClient apiClient;
-    private Gson gson;
+	
+    public static final double JAVA_VERSION;
+    public static final boolean IS_ANDROID;
+    public static final int ANDROID_SDK_VERSION;
+
+    static {
+        JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
+        boolean isAndroid;
+        try {
+            Class.forName("android.app.Activity");
+            isAndroid = true;
+        } catch (ClassNotFoundException e) {
+            isAndroid = false;
+        }
+        IS_ANDROID = isAndroid;
+        int sdkVersion = 0;
+        if (IS_ANDROID) {
+            try {
+                sdkVersion = Class.forName("android.os.Build$VERSION").getField("SDK_INT").getInt(null);
+            } catch (Exception e) {
+                try {
+                    sdkVersion = Integer.parseInt((String) Class.forName("android.os.Build$VERSION").getField("SDK").get(null));
+                } catch (Exception e2) { }
+            }
+        }
+        ANDROID_SDK_VERSION = sdkVersion;
+    }
+
+    /**
+     * The datetime format to be used when <code>lenientDatetimeFormat</code> is enabled.
+     */
+    public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+	
+    private DateFormat dateFormat;
+    private DateFormat datetimeFormat;
+    private boolean lenientDatetimeFormat;
+    private int dateLength;
+
+	private Gson gson;
+	
 
     /**
      * JSON constructor.
      *
      * @param apiClient An instance of ApiClient
      */
-    public JSON(ApiClient apiClient) {
-        this.apiClient = apiClient;
+    public JSON() {
+        /*
+         * Use RFC3339 format for date and datetime.
+         * See http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
+         */
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Always use UTC as the default time zone when dealing with date (without time).
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        initDatetimeFormat();
+
+        // Be lenient on datetime formats when parsing datetime from string.
+        // See <code>parseDatetime</code>.
+        this.lenientDatetimeFormat = true;
+        
         gson = new GsonBuilder()
-            .registerTypeAdapter(Date.class, new DateAdapter(apiClient))
+            .registerTypeAdapter(Date.class, new DateAdapter(this))
             .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter())
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
+    }
+    
+    /**
+     * Initialize datetime format according to the current environment, e.g. Java 1.7 and Android.
+     */
+    private void initDatetimeFormat() {
+        String formatWithTimeZone = null;
+        if (IS_ANDROID) {
+            if (ANDROID_SDK_VERSION >= 18) {
+                // The time zone format "ZZZZZ" is available since Android 4.3 (SDK version 18)
+                formatWithTimeZone = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ";
+            }
+        } else if (JAVA_VERSION >= 1.7) {
+            // The time zone format "XXX" is available since Java 1.7
+            formatWithTimeZone = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+        }
+        if (formatWithTimeZone != null) {
+            this.datetimeFormat = new SimpleDateFormat(formatWithTimeZone);
+            // NOTE: Use the system's default time zone (mainly for datetime formatting).
+        } else {
+            // Use a common format that works across all systems.
+            this.datetimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            // Always use the UTC time zone as we are using a constant trailing "Z" here.
+            this.datetimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
     }
 
     /**
@@ -93,14 +171,7 @@ public class JSON {
     @SuppressWarnings("unchecked")
     public <T> T deserialize(String body, Type returnType) {
         try {
-            if (apiClient.isLenientOnJson()) {
-                JsonReader jsonReader = new JsonReader(new StringReader(body));
-                // see https://google-gson.googlecode.com/svn/trunk/gson/docs/javadocs/com/google/gson/stream/JsonReader.html#setLenient(boolean)
-                jsonReader.setLenient(true);
-                return gson.fromJson(jsonReader, returnType);
-            } else {
                 return gson.fromJson(body, returnType);
-            }
         } catch (JsonParseException e) {
             // Fallback processing when failed to parse JSON form response body:
             //   return the response body string directly for the String return type;
@@ -108,23 +179,150 @@ public class JSON {
             if (returnType.equals(String.class))
                 return (T) body;
             else if (returnType.equals(Date.class))
-                return (T) apiClient.parseDateOrDatetime(body);
+                return (T) parseDateOrDatetime(body);
             else throw(e);
         }
+    }
+    
+
+    public DateFormat getDateFormat() {
+        return dateFormat;
+    }
+
+    public JSON setDateFormat(DateFormat dateFormat) {
+        this.dateFormat = dateFormat;
+        this.dateLength = this.dateFormat.format(new Date()).length();
+        return this;
+    }
+
+    public DateFormat getDatetimeFormat() {
+        return datetimeFormat;
+    }
+
+    public JSON setDatetimeFormat(DateFormat datetimeFormat) {
+        this.datetimeFormat = datetimeFormat;
+        return this;
+    }
+
+
+    /**
+     * Parse the given date string into Date object.
+     * The default <code>dateFormat</code> supports these ISO 8601 date formats:
+     *   2015-08-16
+     *   2015-8-16
+     * @param str String to be parsed
+     * @return Date
+     */
+    public Date parseDate(String str) {
+        if (str == null)
+            return null;
+        try {
+            return dateFormat.parse(str);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Parse the given datetime string into Date object.
+     * When lenientDatetimeFormat is enabled, the following ISO 8601 datetime formats are supported:
+     *   2015-08-16T08:20:05Z
+     *   2015-8-16T8:20:05Z
+     *   2015-08-16T08:20:05+00:00
+     *   2015-08-16T08:20:05+0000
+     *   2015-08-16T08:20:05.376Z
+     *   2015-08-16T08:20:05.376+00:00
+     *   2015-08-16T08:20:05.376+00
+     * Note: The 3-digit milli-seconds is optional. Time zone is required and can be in one of
+     *   these formats:
+     *   Z (same with +0000)
+     *   +08:00 (same with +0800)
+     *   -02 (same with -0200)
+     *   -0200
+     * @see <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>
+     * @param str Date time string to be parsed
+     * @return Date representation of the string
+     */
+    public Date parseDatetime(String str) {
+        if (str == null)
+            return null;
+
+        DateFormat format;
+        if (lenientDatetimeFormat) {
+            /*
+             * When lenientDatetimeFormat is enabled, normalize the date string
+             * into <code>LENIENT_DATETIME_FORMAT</code> to support various formats
+             * defined by ISO 8601.
+             */
+            // normalize time zone
+            //   trailing "Z": 2015-08-16T08:20:05Z => 2015-08-16T08:20:05+0000
+            str = str.replaceAll("[zZ]\\z", "+0000");
+            //   remove colon in time zone: 2015-08-16T08:20:05+00:00 => 2015-08-16T08:20:05+0000
+            str = str.replaceAll("([+-]\\d{2}):(\\d{2})\\z", "$1$2");
+            //   expand time zone: 2015-08-16T08:20:05+00 => 2015-08-16T08:20:05+0000
+            str = str.replaceAll("([+-]\\d{2})\\z", "$100");
+            // add milliseconds when missing
+            //   2015-08-16T08:20:05+0000 => 2015-08-16T08:20:05.000+0000
+            str = str.replaceAll("(:\\d{1,2})([+-]\\d{4})\\z", "$1.000$2");
+            format = new SimpleDateFormat(LENIENT_DATETIME_FORMAT);
+        } else {
+            format = this.datetimeFormat;
+        }
+
+        try {
+            return format.parse(str);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*
+     * Parse date or date time in string format into Date object.
+     *
+     * @param str Date time string to be parsed
+     * @return Date representation of the string
+     */
+    public Date parseDateOrDatetime(String str) {
+        if (str == null)
+            return null;
+        else if (str.length() <= dateLength)
+            return parseDate(str);
+        else
+            return parseDatetime(str);
+    }
+
+    /**
+     * Format the given Date object into string (Date format).
+     *
+     * @param date Date object
+     * @return Formatted date in string representation
+     */
+    public String formatDate(Date date) {
+        return dateFormat.format(date);
+    }
+
+    /**
+     * Format the given Date object into string (Datetime format).
+     *
+     * @param date Date object
+     * @return Formatted datetime in string representation
+     */
+    public String formatDatetime(Date date) {
+        return datetimeFormat.format(date);
     }
 }
 
 class DateAdapter implements JsonSerializer<Date>, JsonDeserializer<Date> {
-    private final ApiClient apiClient;
 
+	private JSON json;
     /**
      * Constructor for DateAdapter
      *
      * @param apiClient Api client
      */
-    public DateAdapter(ApiClient apiClient) {
+    public DateAdapter(JSON json) {
         super();
-        this.apiClient = apiClient;
+        this.json = json;
     }
 
     /**
@@ -140,7 +338,7 @@ class DateAdapter implements JsonSerializer<Date>, JsonDeserializer<Date> {
         if (src == null) {
             return JsonNull.INSTANCE;
         } else {
-            return new JsonPrimitive(apiClient.formatDatetime(src));
+            return new JsonPrimitive(json.formatDatetime(src));
         }
     }
 
@@ -157,12 +355,15 @@ class DateAdapter implements JsonSerializer<Date>, JsonDeserializer<Date> {
     public Date deserialize(JsonElement json, Type date, JsonDeserializationContext context) throws JsonParseException {
         String str = json.getAsJsonPrimitive().getAsString();
         try {
-            return apiClient.parseDateOrDatetime(str);
+            return this.json.parseDateOrDatetime(str);
         } catch (RuntimeException e) {
             throw new JsonParseException(e);
         }
     }
+    
 }
+
+
 
 /**
  * Gson TypeAdapter for jsr310 OffsetDateTime type

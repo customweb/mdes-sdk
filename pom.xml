@@ -6,7 +6,7 @@
 	<artifactId>wallee-mdes-sdk</artifactId>
 	<packaging>jar</packaging>
 	<name>wallee-mdes-sdk</name>
-	<version>1.1.6</version>
+	<version>1.1.7</version>
 	<description>Generation and configuration of MDES-Digital-Enablement API.</description>
 	<url>wallee.com</url>
 
