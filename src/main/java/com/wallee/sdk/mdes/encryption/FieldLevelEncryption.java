@@ -9,6 +9,9 @@ import com.mastercard.developer.encryption.EncryptionException;
 import com.mastercard.developer.json.JsonEngine;
 
 import javax.crypto.Cipher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -210,7 +213,8 @@ public class FieldLevelEncryption {
             String oaepDigestAlgorithm = jsonEngine.isNullOrEmptyJson(oaepDigestAlgorithmJsonElement) ? config.getOaepPaddingDigestAlgorithm() : jsonEngine.toJsonString(oaepDigestAlgorithmJsonElement);
             Object encryptedKeyJsonElement = readAndDeleteJsonKey(payloadContext, jsonPathIn, inJsonObject, config.getEncryptedKeyFieldName());
             Object ivJsonElement = readAndDeleteJsonKey(payloadContext, jsonPathIn, inJsonObject, config.getIvFieldName());
-            String fingerprint = (String) readAndDeleteJsonKey(payloadContext, jsonPathIn, inJsonObject, config.getEncryptionCertificateFingerprintFieldName());
+            String encryptionFingerprintFieldName = StringUtils.isNotBlank(config.getEncryptionKeyFingerprintFieldName()) ? config.getEncryptionKeyFingerprintFieldName() : config.getEncryptionCertificateFingerprintFieldName();
+            String fingerprint = (String) readAndDeleteJsonKey(payloadContext, jsonPathIn, inJsonObject, encryptionFingerprintFieldName);
             readAndDeleteJsonKey(payloadContext, jsonPathIn, inJsonObject, config.getEncryptionKeyFingerprintFieldName());
             params = new FieldLevelEncryptionParams(jsonEngine.toJsonString(ivJsonElement), jsonEngine.toJsonString(encryptedKeyJsonElement), oaepDigestAlgorithm, config, fingerprint);
         }
