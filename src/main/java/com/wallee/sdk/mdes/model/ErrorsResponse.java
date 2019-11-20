@@ -18,6 +18,8 @@ import java.util.Objects;
 import com.wallee.sdk.mdes.model.Error;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ErrorsResponse
@@ -36,8 +38,8 @@ public class ErrorsResponse {
   @SerializedName("responseId")
   private String responseId = null;
 
-  @SerializedName("Errors")
-  private Error errors = null;
+  @SerializedName("errors")
+  private List<Error> errors = null;
 
   public ErrorsResponse errorCode(String errorCode) {
     this.errorCode = errorCode;
@@ -107,20 +109,28 @@ public class ErrorsResponse {
     this.responseId = responseId;
   }
 
-  public ErrorsResponse errors(Error errors) {
+  public ErrorsResponse errors(List<Error> errors) {
     this.errors = errors;
     return this;
   }
 
+  public ErrorsResponse addErrorsItem(Error errorsItem) {
+    if (this.errors == null) {
+      this.errors = new ArrayList<Error>();
+    }
+    this.errors.add(errorsItem);
+    return this;
+  }
+
    /**
-   * __CONDITIONAL__ &lt;br&gt;Returned if one or more errors occurred performing the operation. Not present Get Token error conditions. 
+   * __CONDITIONAL__ &lt;br&gt;Returned if one or more errors occurred performing the operation. Not present Get Token error conditions.       
    * @return errors
   **/
-  public Error getErrors() {
+  public List<Error> getErrors() {
     return errors;
   }
 
-  public void setErrors(Error errors) {
+  public void setErrors(List<Error> errors) {
     this.errors = errors;
   }
 

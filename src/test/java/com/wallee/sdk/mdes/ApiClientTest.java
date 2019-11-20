@@ -3,6 +3,7 @@ package com.wallee.sdk.mdes;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -23,6 +24,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.gson.reflect.TypeToken;
 import com.mastercard.developer.encryption.EncryptionException;
 import com.mastercard.developer.utils.EncryptionUtils;
 import com.wallee.sdk.mdes.ApiClient.ApiClientConfiguration;
@@ -42,6 +44,7 @@ import com.wallee.sdk.mdes.model.BillingAddress;
 import com.wallee.sdk.mdes.model.CardAccountDataInbound;
 import com.wallee.sdk.mdes.model.DeleteRequestSchema;
 import com.wallee.sdk.mdes.model.DeleteResponseSchema;
+import com.wallee.sdk.mdes.model.ErrorsResponse;
 import com.wallee.sdk.mdes.model.FundingAccountData;
 import com.wallee.sdk.mdes.model.FundingAccountInfo;
 import com.wallee.sdk.mdes.model.FundingAccountInfoEncryptedPayload;
@@ -59,7 +62,6 @@ import com.wallee.sdk.mdes.model.TokenizeRequestSchema;
 import com.wallee.sdk.mdes.model.TokenizeResponseSchema;
 import com.wallee.sdk.mdes.model.TransactRequestSchema;
 import com.wallee.sdk.mdes.model.TransactResponseSchema;
-
 public class ApiClientTest {
 
 	private static String signingKeyAlias;
@@ -463,5 +465,33 @@ public class ApiClientTest {
 		Assert.assertEquals("AF1ajnoLKKj8AAKhssPUGgADFA==",
 				response.getEncryptedPayload().getEncryptedData().getDe48se43Data());
 	}
+
+	/**
+	 * ErrorResponse.errors schema has been changed at .yaml file. Should have the following schema:
+	 * 		errors:
+     *  		type: array
+     *   		items:
+     *      		$ref: '#/definitions/Error'      
+     *    		description: | 
+     *     			__CONDITIONAL__ <br>Returned if one or more errors occurred performing the operation. Not present Get Token error conditions.     
+	 */
+	@Test
+	public void parseError() {
+		
+		String errorMsg = "{\"errorCode\":\"INVALID_PAN\",\"errorDescription\":\"Invalid PAN\",\"errors\":[{\"source\":\"INPUT\",\"reasonCode\":\"INVALID_PAN\",\"description\":\"Invalid PAN\"}],\"responseId\":\"1c8a20b7-8980-4307-b6ab-7b6f3ccb6dd2\",\"responseHost\":\"stl.services.mastercard.com/mtf/mdes\"}";
+		
+		Type type = new TypeToken<ErrorsResponse>() {
+		}.getType();
+		
+		ErrorsResponse errorsResponse = new JSON().deserialize(errorMsg, type);
+		
+		Assert.assertEquals("INVALID_PAN", errorsResponse.getErrorCode());
+		Assert.assertEquals("Invalid PAN", errorsResponse.getErrorDescription());
+		Assert.assertEquals("1c8a20b7-8980-4307-b6ab-7b6f3ccb6dd2", errorsResponse.getResponseId());
+		Assert.assertEquals("stl.services.mastercard.com/mtf/mdes", errorsResponse.getResponseHost());
+		Assert.assertEquals("INPUT", errorsResponse.getErrors().get(0).getSource());
+		Assert.assertEquals("INVALID_PAN", errorsResponse.getErrors().get(0).getReasonCode());
+		Assert.assertEquals("Invalid PAN", errorsResponse.getErrors().get(0).getDescription());
+	}	
 
 }
