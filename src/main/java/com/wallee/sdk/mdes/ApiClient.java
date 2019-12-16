@@ -95,9 +95,9 @@ public class ApiClient {
 	private EndPoint endpoint;
 
 	public enum EndPoint {
-		SANDBOX("https://sandbox.api.mastercard.com/mdes", "static"),
+		SANDBOX("https://sandbox.api.mastercard.com/mdes", "/static"),
 
-		MTF("https://api.mastercard.com/mdes", "mtf"),
+		MTF("https://api.mastercard.com/mdes", "/mtf"),
 
 		PRODUCTION("https://api.mastercard.com/mdes", ""),
 
@@ -1106,7 +1106,7 @@ public class ApiClient {
 			ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
 		updateParamsForAuth(authNames, queryParams, headerParams);
 
-		path = path.replace("#env", endpoint.getEnv()); // WALLE added
+		path = path.replace("/#env", endpoint.getEnv()); // WALLEE added
 
 		final String url = buildUrl(path, queryParams);
 		final Request.Builder reqBuilder = new Request.Builder().url(url);
