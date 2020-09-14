@@ -62,6 +62,7 @@ import com.wallee.sdk.mdes.model.TokenizeRequestSchema;
 import com.wallee.sdk.mdes.model.TokenizeResponseSchema;
 import com.wallee.sdk.mdes.model.TransactRequestSchema;
 import com.wallee.sdk.mdes.model.TransactResponseSchema;
+
 public class ApiClientTest {
 
 	private static String signingKeyAlias;

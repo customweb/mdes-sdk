@@ -1,4 +1,4 @@
-package com.wallee.sdk.mdes.encryption;
+package com.wallee.sdk.trid.encryption;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Map;

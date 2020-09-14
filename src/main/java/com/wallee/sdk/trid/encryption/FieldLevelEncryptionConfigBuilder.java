@@ -1,4 +1,4 @@
-package com.wallee.sdk.mdes.encryption;
+package com.wallee.sdk.trid.encryption;
 
 import com.jayway.jsonpath.JsonPath;
 import com.mastercard.developer.encryption.EncryptionException;

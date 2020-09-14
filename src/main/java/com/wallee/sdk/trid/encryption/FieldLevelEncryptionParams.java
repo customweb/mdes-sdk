@@ -1,4 +1,4 @@
-package com.wallee.sdk.mdes.encryption;
+package com.wallee.sdk.trid.encryption;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;

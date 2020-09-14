@@ -1,12 +1,12 @@
-package com.wallee.sdk.mdes.interceptors;
+package com.wallee.sdk.trid.interceptors;
 
 import com.mastercard.developer.encryption.EncryptionException;
 import com.squareup.okhttp.*;
 
 import okio.Buffer;
-import com.wallee.sdk.mdes.encryption.FieldLevelEncryption;
-import com.wallee.sdk.mdes.encryption.FieldLevelEncryptionConfig;
-import com.wallee.sdk.mdes.encryption.FieldLevelEncryptionParams;
+import com.wallee.sdk.trid.encryption.FieldLevelEncryption;
+import com.wallee.sdk.trid.encryption.FieldLevelEncryptionConfig;
+import com.wallee.sdk.trid.encryption.FieldLevelEncryptionParams;
 
 import java.io.IOException;
 
