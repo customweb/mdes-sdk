@@ -28,7 +28,7 @@ Add this dependency to your project's POM:
 <dependency>
     <groupId>com.wallee</groupId>
     <artifactId>wallee-mdes-sdk</artifactId>
-    <version>1.1.21</version>
+    <version>1.1.22</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -38,7 +38,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "com.wallee:wallee-mdes-sdk:1.1.21"
+compile "com.wallee:wallee-mdes-sdk:1.1.22"
 ```
 
 ### Others
@@ -49,7 +49,7 @@ At first generate the JAR by executing:
 
 Then manually install the following JARs:
 
-* target/wallee-mdes-sdk-1.1.21.jar
+* target/wallee-mdes-sdk-1.1.22.jar
 * target/lib/*.jar
 
 ## Getting Started
