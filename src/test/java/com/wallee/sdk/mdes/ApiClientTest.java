@@ -187,6 +187,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void tokenizeTest() throws ApiException {
 
         TokenizeRequestSchema tokenizeRequestSchema = new TokenizeRequestSchema();
@@ -286,6 +287,7 @@ public class ApiClientTest {
     }
 
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getAssetTest() throws ApiException {
         ApiClient apiClient = buildApiClient();
 
@@ -298,6 +300,7 @@ public class ApiClientTest {
     }
 
     @Test  
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getDigitalAssets() throws ApiException {
         ApiClient apiClient = buildApiClient();
 
@@ -336,6 +339,7 @@ public class ApiClientTest {
     }
 
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getDeleteTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -362,6 +366,7 @@ public class ApiClientTest {
     }
 
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getTaskStatusTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -380,6 +385,7 @@ public class ApiClientTest {
     }
 
     @Test 
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void searchTokensTest() throws ApiException {
 
         SearchTokensRequestSchema searchTokensRequestSchema = new SearchTokensRequestSchema();
@@ -416,6 +422,7 @@ public class ApiClientTest {
     }
 
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getTokenTest() throws ApiException {
         GetTokenRequestSchema schema = new GetTokenRequestSchema();
         schema.setResponseHost("site2.payment-app-provider.com");
@@ -437,6 +444,7 @@ public class ApiClientTest {
     }
 
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void transactTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -477,6 +485,7 @@ public class ApiClientTest {
      *              __CONDITIONAL__ <br>Returned if one or more errors occurred performing the operation. Not present Get Token error conditions.     
      */
     @Test
+    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void parseError() {
         
         String errorMsg = "{\"errorCode\":\"INVALID_PAN\",\"errorDescription\":\"Invalid PAN\",\"errors\":[{\"source\":\"INPUT\",\"reasonCode\":\"INVALID_PAN\",\"description\":\"Invalid PAN\"}],\"responseId\":\"1c8a20b7-8980-4307-b6ab-7b6f3ccb6dd2\",\"responseHost\":\"stl.services.mastercard.com/mtf/mdes\"}";
