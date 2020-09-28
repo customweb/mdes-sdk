@@ -58,7 +58,7 @@ public class BatchRequestTokenRequestorsApi {
 
     /**
      * Build call for tokenRequestorsBatchesPOST
-     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. A maximum request size of 4 MB will be enforced on the request. (required)
+     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. __A maximum request size of 4 MB will be enforced on the request.__ (required)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
@@ -125,7 +125,7 @@ public class BatchRequestTokenRequestorsApi {
     /**
      * TokenRequestorsBatches_POST
      * 
-     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. A maximum request size of 4 MB will be enforced on the request. (required)
+     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. __A maximum request size of 4 MB will be enforced on the request.__ (required)
      * @return RequestTokenRequestorResponseSchema
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -137,7 +137,7 @@ public class BatchRequestTokenRequestorsApi {
     /**
      * TokenRequestorsBatches_POST
      * 
-     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. A maximum request size of 4 MB will be enforced on the request. (required)
+     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. __A maximum request size of 4 MB will be enforced on the request.__ (required)
      * @return ApiResponse&lt;RequestTokenRequestorResponseSchema&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -150,7 +150,7 @@ public class BatchRequestTokenRequestorsApi {
     /**
      * TokenRequestorsBatches_POST (asynchronously)
      * 
-     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. A maximum request size of 4 MB will be enforced on the request. (required)
+     * @param body Request Token Requestor IDs accepts a request containing information about a new token requestor to be on-boarded into Mastercard.  The request will be validated and the caller authorized. The Token Requestor Id assignments will be returned in the asynchornous tokenReqeuestorAssignment. __A maximum request size of 4 MB will be enforced on the request.__ (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object

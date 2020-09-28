@@ -36,10 +36,10 @@ public class TokenRequestorsArrayRequest {
   private String debitCreditIndicator = null;
 
   @SerializedName("tokenRequestorPngLogo")
-  private String tokenRequestorPngLogo = null;
+  private Object tokenRequestorPngLogo = null;
 
   @SerializedName("tokenRequestorSvgLogo")
-  private String tokenRequestorSvgLogo = null;
+  private Object tokenRequestorSvgLogo = null;
 
   @SerializedName("providePaymentAccountReference")
   private Boolean providePaymentAccountReference = null;
@@ -56,7 +56,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Identifier for the entity for whom a Token Requestor ID was requested. Only alpha-numeric characters [a-zA-Z0-9].
+   * __REQUIRED__&lt;br&gt; Identifier for the entity for whom a Token Requestor ID was requested. Only alpha-numeric characters [a-zA-Z0-9].
    * @return entityId
   **/
   public String getEntityId() {
@@ -73,7 +73,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Identifier for the Payment App, unique per app as assigned by Mastercard for this Payment App. For M4M token requestors this value is &#39;M4MCLOUDDSRP&#39;
+   * __REQUIRED__&lt;br&gt; Identifier for the Payment App, unique per app as assigned by Mastercard for this Payment App. For M4M token requestors this value is &#39;M4MCLOUDDSRP&#39;
    * @return paymentAppId
   **/
   public String getPaymentAppId() {
@@ -90,7 +90,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * The consumer recognizable nameof the token requestor. This must be unique. Text will be HTML escaped and the length will be validated after. HTML tags will not be escaped and not rendered.
+   * __REQUIRED__&lt;br&gt; The consumer recognizable nameof the token requestor. This must be unique. Text will be HTML escaped and the length will be validated after. HTML tags will not be escaped and not rendered.
    * @return consumerFacingEntityName
   **/
   public String getConsumerFacingEntityName() {
@@ -107,7 +107,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Indication if the token requestor supports debit cards, credit cards or both. Must be one of,  * CREDIT - Credit cards are supported.  * DEBIT - Debit cards are supported.  * BOTH - Credit and Debit cards are supported.
+   * __REQUIRED__&lt;br&gt; Indication if the token requestor supports debit cards, credit cards or both. Must be one of,  * CREDIT - Credit cards are supported.  * DEBIT - Debit cards are supported.  * BOTH - Credit and Debit cards are supported.
    * @return debitCreditIndicator
   **/
   public String getDebitCreditIndicator() {
@@ -118,37 +118,37 @@ public class TokenRequestorsArrayRequest {
     this.debitCreditIndicator = debitCreditIndicator;
   }
 
-  public TokenRequestorsArrayRequest tokenRequestorPngLogo(String tokenRequestorPngLogo) {
+  public TokenRequestorsArrayRequest tokenRequestorPngLogo(Object tokenRequestorPngLogo) {
     this.tokenRequestorPngLogo = tokenRequestorPngLogo;
     return this;
   }
 
    /**
-   * The logo of the token requestor in a PNG format. The base64 encoded binary of the image. The dimensions must be 192 X 192 pixels. If the Token Requestor logo isnâ€™t originally square, it must be centered on a white square.
+   * __OPTIONAL__&lt;br&gt; The logo of the token requestor in a PNG format. The base64 encoded binary of the image. The dimensions must be 192 X 192 pixels. If the Token Requestor logo isn&#39;t originally square, it must be centered on a white square. Must also be accompanied by tokenRequestorSvgLogo.
    * @return tokenRequestorPngLogo
   **/
-  public String getTokenRequestorPngLogo() {
+  public Object getTokenRequestorPngLogo() {
     return tokenRequestorPngLogo;
   }
 
-  public void setTokenRequestorPngLogo(String tokenRequestorPngLogo) {
+  public void setTokenRequestorPngLogo(Object tokenRequestorPngLogo) {
     this.tokenRequestorPngLogo = tokenRequestorPngLogo;
   }
 
-  public TokenRequestorsArrayRequest tokenRequestorSvgLogo(String tokenRequestorSvgLogo) {
+  public TokenRequestorsArrayRequest tokenRequestorSvgLogo(Object tokenRequestorSvgLogo) {
     this.tokenRequestorSvgLogo = tokenRequestorSvgLogo;
     return this;
   }
 
    /**
-   * The logo of the token requestor in a PNG format. The base64 encoded binary of the image. The dimensions must be square. If the Token Requestor logo isnâ€™t originally square, it must be centered on a white square.
+   * __OPTIONAL__&lt;br&gt; The logo of the token requestor in a PNG format. The base64 encoded binary of the image. The dimensions must be square. If the Token Requestor logo isn&#39;t originally square, it must be centered on a white square. Must also be accompanied by tokenRequestorPngLogo.
    * @return tokenRequestorSvgLogo
   **/
-  public String getTokenRequestorSvgLogo() {
+  public Object getTokenRequestorSvgLogo() {
     return tokenRequestorSvgLogo;
   }
 
-  public void setTokenRequestorSvgLogo(String tokenRequestorSvgLogo) {
+  public void setTokenRequestorSvgLogo(Object tokenRequestorSvgLogo) {
     this.tokenRequestorSvgLogo = tokenRequestorSvgLogo;
   }
 
@@ -158,7 +158,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Indicator if MDES should return the Payment Account Reference in the response to the Tokenize API. See MDES Digital Enablement API documentation. A payload encryption certificate will have to be configured for MDES to return the PAR. Must be one of,   * &#39;true&#39; - MDES should return the PAR.   * &#39;false&#39; - MDES should not return the PAR.
+   * __REQUIRED__&lt;br&gt; Indicator if MDES should return the Payment Account Reference in the response to the Tokenize API. See MDES Digital Enablement API documentation. A payload encryption certificate will have to be configured for MDES to return the PAR.  Must be one of,   * &#39;true&#39; - MDES should return the PAR.   * &#39;false&#39; - MDES should not return the PAR.
    * @return providePaymentAccountReference
   **/
   public Boolean getProvidePaymentAccountReference() {
@@ -175,7 +175,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Indicator if the MDES should return additional issuer information for declined transactions in TransactionDetails. See MDES Digital Enablement API documentation. Must be one of,   * &#39;true&#39; - MDES should return the details.   * &#39;false&#39; - MDES should not return the details.
+   * __REQUIRED__&lt;br&gt; Indicator if the MDES should return additional issuer information for declined transactions in TransactionDetails. See MDES Digital Enablement API documentation. Must be one of,   * &#39;true&#39; - MDES should return the details.   * &#39;false&#39; - MDES should not return the details.
    * @return enableTransactionIssuerResponseInformation
   **/
   public Boolean getEnableTransactionIssuerResponseInformation() {
@@ -192,7 +192,7 @@ public class TokenRequestorsArrayRequest {
   }
 
    /**
-   * Hashing algorithm used with the OEAP scheme. If omitted, then the RSA Encryption Standard PKCS &#39;#1 v1.5&#39; will be used. Must be one of, * SHA256 - Use the SHA-256 algorithm. * SHA512 - Use the SHA-512 algorithm. * NONE - PKCS &#39;#1 v1.5&#39;
+   * __OPTIONAL__&lt;br&gt; Hashing algorithm used with the OEAP scheme. If omitted, then the RSA Encryption Standard PKCS &#39;#1 v1.5&#39; will be used. Must be one of, * SHA256 - Use the SHA-256 algorithm. * SHA512 - Use the SHA-512 algorithm. * NONE - PKCS &#39;#1 v1.5&#39;
    * @return wrappedEncryptionHashAlgorithm
   **/
   public String getWrappedEncryptionHashAlgorithm() {

@@ -60,7 +60,7 @@ public class RequestTokenRequestorErrorSchema {
   }
 
    /**
-   * Unique identifier for the response.
+   * __REQUIRED__&lt;br&gt; Unique identifier for the response.
    * @return responseId
   **/
   public String getResponseId() {

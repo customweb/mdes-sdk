@@ -38,7 +38,7 @@ public class UpdateTokenRequestorRequestSchema {
   }
 
    /**
-   * Unique identifier for the request. Only alpha-numeric characters [a-zA-Z0-9].
+   * __REQUIRED__&lt;br&gt; Unique identifier for the request. Only alpha-numeric characters [a-zA-Z0-9].
    * @return requestId
   **/
   public String getRequestId() {
@@ -60,7 +60,7 @@ public class UpdateTokenRequestorRequestSchema {
   }
 
    /**
-   * The information on the entities requesting a Token Requestor ID
+   * __REQUIRED__&lt;br&gt; The information on the entities requesting a Token Requestor ID
    * @return tokenRequestors
   **/
   public List<TokenRequestorsArrayUpdate> getTokenRequestors() {

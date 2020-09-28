@@ -32,7 +32,7 @@ public class RequestTokenRequestorResponseSchema {
   }
 
    /**
-   * Unique identifier for the response.  maxLength: 64
+   * __REQUIRED__&lt;br&gt; Unique identifier for the response.
    * @return responseId
   **/
   public String getResponseId() {

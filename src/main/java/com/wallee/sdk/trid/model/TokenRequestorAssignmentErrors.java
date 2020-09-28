@@ -41,7 +41,7 @@ public class TokenRequestorAssignmentErrors {
   }
 
    /**
-   * Identifier for the entity for whom a Token Requestor ID was requested. Only alpha-numeric characters [a-zA-Z0-9].
+   * __REQUIRED__&lt;br&gt; Identifier for the entity for whom a Token Requestor ID was requested. Only alpha-numeric characters [a-zA-Z0-9].
    * @return entityId
   **/
   public String getEntityId() {
@@ -58,7 +58,7 @@ public class TokenRequestorAssignmentErrors {
   }
 
    /**
-   * An element used to indicate the source of the issue causing this error. Must be one of, * INPUT - Service inputs triggered an error. * MDES - MDES reported an error.
+   * __REQUIRED__&lt;br&gt; An element used to indicate the source of the issue causing this error. Must be one of, * INPUT - Service inputs triggered an error. * MDES - MDES reported an error.
    * @return source
   **/
   public String getSource() {
@@ -75,7 +75,7 @@ public class TokenRequestorAssignmentErrors {
   }
 
    /**
-   * A reason code for the error that has occurred. See Error Reason Code definitions for the appropriate API service.
+   * __REQUIRED__&lt;br&gt; A reason code for the error that has occurred. See Error Reason Code definitions for the appropriate API service.
    * @return reasonCode
   **/
   public String getReasonCode() {
