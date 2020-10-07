@@ -912,11 +912,6 @@ public class ApiClient {
                 request.body().writeTo(buffer);
                 requestPayload = buffer.readUtf8();
             }
-
-            
-            Headers header  = request.headers();
-            
-            System.out.println(requestPayload);
             
             T data = handleResponse(response, returnType);
             return new ApiResponse<T>(response.code(), response.headers().toMultimap(), data);
