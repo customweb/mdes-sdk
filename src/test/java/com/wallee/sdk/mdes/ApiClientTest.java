@@ -80,22 +80,24 @@ public class ApiClientTest {
     public static void loadKeys() throws IOException, GeneralSecurityException {
 
         loadEnviromentVariables();
-        
+
         // public key
-        String decodedPublicKeyStr = new String(Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
+        String decodedPublicKeyStr = new String(
+                Base64.getDecoder().decode(encodedBase64PublicKey.getBytes(StandardCharsets.UTF_8)),
                 StandardCharsets.UTF_8);
         try (InputStream in = new ByteArrayInputStream(decodedPublicKeyStr.getBytes(StandardCharsets.UTF_8))) {
             publicKeyEncryptionCertificate = loadEncryptionCertificate(in);
         }
 
         // private key
-        decryptionPrivateKey = EncryptionUtils.loadDecryptionKey("./src/test/resources/e5fec5dc4e2fab3c968dbe78a905Private-Key-Decrypt.pem");
+        decryptionPrivateKey = EncryptionUtils
+                .loadDecryptionKey("./src/test/resources/e5fec5dc4e2fab3c968dbe78a905Private-Key-Decrypt.pem");
 
-        // signing key  
+        // signing key
         byte[] decodeP12 = Base64.getDecoder().decode(encodedBase64SigningKey.getBytes(StandardCharsets.UTF_8));
 
         signingKey = loadSigningKey(//
-                decodeP12, // 
+                decodeP12, //
                 signingKeyAlias, //
                 signingKeyPassword);
     }
@@ -104,26 +106,28 @@ public class ApiClientTest {
         signingKeyAlias = Optional//
                 .ofNullable(System.getenv("MDES_SIGNING_KEY_ALIAS"))//
                 .orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_ALIAS"));
-        
+
         signingKeyPassword = Optional//
                 .ofNullable(System.getenv("MDES_SIGNING_KEY_PASSWORD"))//
                 .orElseThrow(() -> new NullPointerException("MDES_SIGNING_KEY_PASSWORD"));
-        
+
         consumerKey = Optional//
                 .ofNullable(System.getenv("MDES_CONSUMER_KEY"))//
                 .orElseThrow(() -> new NullPointerException("MDES_CONSUMER_KEY"));
-        
+
         encodedBase64PublicKey = Optional//
                 .ofNullable(System.getenv("MDES_ENCODED_BASE64_PUBLIC_KEY"))//
                 .orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_PUBLIC_KEY"));
-        
+
         encodedBase64SigningKey = Optional//
                 .ofNullable(System.getenv("MDES_ENCODED_BASE64_SIGNING_KEY"))//
                 .orElseThrow(() -> new NullPointerException("MDES_ENCODED_BASE64_SIGNING_KEY"));
     }
+
     /*
-     * Overloaded version with input parameter InputStream instead of String (path) of:
-     * com.mastercard.developer.utils.EncryptionUtils.loadEncryptionCertificate(String)
+     * Overloaded version with input parameter InputStream instead of String (path)
+     * of: com.mastercard.developer.utils.EncryptionUtils.loadEncryptionCertificate(
+     * String)
      */
     private static Certificate loadEncryptionCertificate(InputStream inStream)
             throws CertificateException, NoSuchProviderException {
@@ -132,8 +136,10 @@ public class ApiClientTest {
     }
 
     /*
-     * Overloaded version with signing-key as byte array parameter instead of String (path) of:
-     * com.mastercard.developer.utils.AuthenticationUtils.loadSigningKey(String, String, String)
+     * Overloaded version with signing-key as byte array parameter instead of String
+     * (path) of:
+     * com.mastercard.developer.utils.AuthenticationUtils.loadSigningKey(String,
+     * String, String)
      */
     private static PrivateKey loadSigningKey(byte[] pkcs12Key, String signingKeyAlias, String signingKeyPassword)
             throws IOException, NoSuchProviderException, KeyStoreException, CertificateException,
@@ -146,30 +152,30 @@ public class ApiClientTest {
         }
 
     }
-    
-    private static FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
+
+    private static FieldLevelEncryptionConfig buildFieldLevelEncryptionConfig(
+            Certificate publicKeyEncryptionCertificate, PrivateKey decryptionPrivateKey) {
         try {
             return FieldLevelEncryptionConfigBuilder.aFieldLevelEncryptionConfig()
-                    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData", "$.fundingAccountInfo.encryptedPayload")  
+                    .withEncryptionPath("$.fundingAccountInfo.encryptedPayload.encryptedData",
+                            "$.fundingAccountInfo.encryptedPayload")
                     .withEncryptionPath("$.encryptedPayload.encryptedData", "$.encryptedPayload")
                     .withDecryptionPath("$.tokenDetail", "$.tokenDetail.encryptedData")
                     .withDecryptionPath("$.encryptedPayload", "$.encryptedPayload.encryptedData")
                     .withEncryptionCertificate(publicKeyEncryptionCertificate)
                     .withDecryptionPrivateKeyProvider((testFingerprint) -> {
-                        final String SANDBOX_FINGERPRINT = "982175aa53858f44de919c70b20e011681b9db0deec4f4c117da8ece86a4684e";
-                        if (SANDBOX_FINGERPRINT.equals(testFingerprint)) {
+                        final String SANDBOX_FINGERPRINT_01 = "982175aa53858f44de919c70b20e011681b9db0deec4f4c117da8ece86a4684e";
+                        final String SANDBOX_FINGERPRINT_02 = "3e3ff1c50fd4046b9a80c39d3d077f7313b92ea01462744bfe50b62769dbef68";
+                        if (SANDBOX_FINGERPRINT_01.equals(testFingerprint)
+                                || SANDBOX_FINGERPRINT_02.equals(testFingerprint)) {
                             return decryptionPrivateKey;
                         }
                         throw new RuntimeException("fingerprint: '" + testFingerprint + "' not found.");
-                     })
-                    .withOaepPaddingDigestAlgorithm("SHA-512")
-                    .withEncryptedValueFieldName("encryptedData")
-                    .withEncryptedKeyFieldName("encryptedKey")
-                    .withIvFieldName("iv")
+                    }).withOaepPaddingDigestAlgorithm("SHA-512").withEncryptedValueFieldName("encryptedData")
+                    .withEncryptedKeyFieldName("encryptedKey").withIvFieldName("iv")
                     .withOaepPaddingDigestAlgorithmFieldName("oaepHashingAlgorithm")
                     .withEncryptionCertificateFingerprintFieldName("publicKeyFingerprint")
-                    .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX)
-                    .build();
+                    .withFieldValueEncoding(FieldLevelEncryptionConfig.FieldValueEncoding.HEX).build();
         } catch (EncryptionException e) {
             throw new RuntimeException(e);
         }
@@ -181,14 +187,14 @@ public class ApiClientTest {
                 .setSigningKey(signingKey)//
                 .setPublicKeyEncryptionCertificate(publicKeyEncryptionCertificate)//
                 .setConsumerKey(consumerKey)//
-                .setFieldLevelEncryptionConfig(buildFieldLevelEncryptionConfig(publicKeyEncryptionCertificate, decryptionPrivateKey))//
+                .setFieldLevelEncryptionConfig(
+                        buildFieldLevelEncryptionConfig(publicKeyEncryptionCertificate, decryptionPrivateKey))//
                 .build();
 
         return new ApiClient(apiClientConfiguration);
     }
-    
-    @Test 
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
+
+    @Test
     public void tokenizeTest() throws ApiException {
 
         TokenizeRequestSchema tokenizeRequestSchema = new TokenizeRequestSchema();
@@ -199,7 +205,8 @@ public class ApiClientTest {
         tokenizeRequestSchema.setTaskId("123456");
         tokenizeRequestSchema.setFundingAccountInfo(buildFundingAccountInfo());
         tokenizeRequestSchema.setConsumerLanguage("en");
-        tokenizeRequestSchema.setTokenizationAuthenticationValue("RHVtbXkgYmFzZSA2NCBkYXRhIC0gdGhpcyBpcyBub3QgYSByZWFsIFRBViBleGFtcGxl"); 
+        tokenizeRequestSchema.setTokenizationAuthenticationValue(
+                "RHVtbXkgYmFzZSA2NCBkYXRhIC0gdGhpcyBpcyBub3QgYSByZWFsIFRBViBleGFtcGxl");
 
         ApiClient apiClient = buildApiClient();
 
@@ -210,37 +217,40 @@ public class ApiClientTest {
         Assert.assertEquals("APPROVED", response.getDecision());
         Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokenUniqueReference());
         Assert.assertEquals("FWSPMC000000000159f71f703d2141efaf04dd26803f922b", response.getPanUniqueReference());
-        
-        
+
         Assert.assertEquals("12344", response.getAuthenticationMethods().get(0).getId());
         Assert.assertEquals("TEXT_TO_CARDHOLDER_NUMBER", response.getAuthenticationMethods().get(0).getType());
         Assert.assertEquals("12X-XXX-XX32", response.getAuthenticationMethods().get(0).getValue());
 
         Assert.assertEquals("12345", response.getAuthenticationMethods().get(1).getId());
-        Assert.assertEquals("CARDHOLDER_TO_CALL_AUTOMATED_NUMBER", response.getAuthenticationMethods().get(1).getType());
+        Assert.assertEquals("CARDHOLDER_TO_CALL_AUTOMATED_NUMBER",
+                response.getAuthenticationMethods().get(1).getType());
         Assert.assertEquals("1-800-BANK-NUMBER", response.getAuthenticationMethods().get(1).getValue());
-        
+
         Assert.assertEquals("800200c9-629d-11e3-949a-0739d27e5a66", response.getProductConfig().getBrandLogoAssetId());
         Assert.assertEquals(null, response.getProductConfig().getIssuerLogoAssetId());
         Assert.assertEquals(null, response.getProductConfig().getIsCoBranded());
         Assert.assertEquals(null, response.getProductConfig().getCoBrandName());
         Assert.assertEquals(null, response.getProductConfig().getCoBrandLogoAssetId());
-        
-        Assert.assertEquals("739d27e5-629d-11e3-949a-0800200c9a66", response.getProductConfig().getCardBackgroundCombinedAssetId());
+
+        Assert.assertEquals("739d27e5-629d-11e3-949a-0800200c9a66",
+                response.getProductConfig().getCardBackgroundCombinedAssetId());
         Assert.assertEquals(null, response.getProductConfig().getCardBackgroundAssetId());
         Assert.assertEquals(null, response.getProductConfig().getIconAssetId());
         Assert.assertEquals("000000", response.getProductConfig().getForegroundColor());
         Assert.assertEquals("Issuing Bank", response.getProductConfig().getIssuerName());
         Assert.assertEquals("Bank Rewards MasterCard", response.getProductConfig().getShortDescription());
-        Assert.assertEquals("Bank Rewards MasterCard with the super duper rewards program", response.getProductConfig().getLongDescription());
+        Assert.assertEquals("Bank Rewards MasterCard with the super duper rewards program",
+                response.getProductConfig().getLongDescription());
         Assert.assertEquals("https://bank.com/customerservice", response.getProductConfig().getCustomerServiceUrl());
         Assert.assertEquals(null, response.getProductConfig().getCustomerServiceEmail());
         Assert.assertEquals(null, response.getProductConfig().getCustomerServicePhoneNumber());
         Assert.assertEquals(null, response.getProductConfig().getOnlineBankingLoginUrl());
-        Assert.assertEquals("https://bank.com/termsAndConditions", response.getProductConfig().getTermsAndConditionsUrl());
+        Assert.assertEquals("https://bank.com/termsAndConditions",
+                response.getProductConfig().getTermsAndConditionsUrl());
         Assert.assertEquals("https://bank.com/privacy", response.getProductConfig().getPrivacyPolicyUrl());
         Assert.assertEquals("123456", response.getProductConfig().getIssuerProductConfigCode());
-        
+
         Assert.assertEquals("1234", response.getTokenInfo().getTokenPanSuffix());
         Assert.assertEquals("2345", response.getTokenInfo().getAccountPanSuffix());
         Assert.assertNotNull(response.getTokenInfo().getTokenExpiry());
@@ -249,14 +259,16 @@ public class ApiClientTest {
         Assert.assertEquals("1", response.getTokenInfo().getTokenAssuranceLevel());
         Assert.assertEquals("CREDIT", response.getTokenInfo().getProductCategory());
 
-        Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokenDetail().getTokenUniqueReference());
+        Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45",
+                response.getTokenDetail().getTokenUniqueReference());
         Assert.assertEquals(null, response.getTokenDetail().getPublicKeyFingerprint());
         Assert.assertEquals(null, response.getTokenDetail().getEncryptedKey());
         Assert.assertEquals(null, response.getTokenDetail().getOaepHashingAlgorithm());
         Assert.assertEquals(null, response.getTokenDetail().getIv());
 
         Assert.assertEquals(null, response.getTokenDetail().getEncryptedData().getAccountHolderData());
-        Assert.assertEquals("500181d9f8e0629211e3949a08002", response.getTokenDetail().getEncryptedData().getPaymentAccountReference());
+        Assert.assertEquals("500181d9f8e0629211e3949a08002",
+                response.getTokenDetail().getEncryptedData().getPaymentAccountReference());
         Assert.assertEquals(null, response.getTokenDetail().getEncryptedData().getCardAccountData());
     }
 
@@ -288,7 +300,11 @@ public class ApiClientTest {
     }
 
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
+    @Ignore("M4M started to respond with an error. getAsset is used for fetch card art. Currently, this is not used. So, we can ignore it.")
+    // M4M responds:
+    // {"Errors":{"Error":[{"Source":"Service","ReasonCode":"SYSTEM_ERROR","Description":"An
+    // unexpected error has occurred with the service you have
+    // requested.","Recoverable":true,"Details":null}]}}
     public void getAssetTest() throws ApiException {
         ApiClient apiClient = buildApiClient();
 
@@ -300,8 +316,7 @@ public class ApiClientTest {
                 response.getMediaContents().get(0).getData().substring(0, 100));
     }
 
-    @Test  
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
+    @Test
     public void getDigitalAssets() throws ApiException {
         ApiClient apiClient = buildApiClient();
 
@@ -322,7 +337,7 @@ public class ApiClientTest {
         requestSchema.setEncryptedPayload(encryptedPayload);
 
         GetDigitalAssetsResponseSchema response = requestApi.getDigitalAssets(requestSchema);
-        
+
         Assert.assertNotNull(response.getResponseId());
         Assert.assertEquals(null, response.getResponseHost());
         Assert.assertEquals(null, response.getBrandLogoAssetId());
@@ -340,7 +355,6 @@ public class ApiClientTest {
     }
 
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getDeleteTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -367,7 +381,6 @@ public class ApiClientTest {
     }
 
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getTaskStatusTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -385,36 +398,39 @@ public class ApiClientTest {
         Assert.assertEquals("PENDING", response.getStatus());
     }
 
-    @Test 
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
+    @Test
     public void searchTokensTest() throws ApiException {
 
         SearchTokensRequestSchema searchTokensRequestSchema = new SearchTokensRequestSchema();
         searchTokensRequestSchema.setRequestId("123456");
         searchTokensRequestSchema.setResponseHost("site2.payment-app-provider.com");
-        searchTokensRequestSchema.setTokenRequestorId("98765432101");       
+        searchTokensRequestSchema.setTokenRequestorId("98765432101");
         searchTokensRequestSchema.setFundingAccountInfo(buildFundingAccountInfo());
 
-        SearchTokensResponseSchema response = new SearchTokensApi(buildApiClient()).searchTokens(searchTokensRequestSchema);
-        
+        SearchTokensResponseSchema response = new SearchTokensApi(buildApiClient())
+                .searchTokens(searchTokensRequestSchema);
+
         Assert.assertEquals("site.1.sample.service.mastercard.com", response.getResponseHost());
         Assert.assertEquals("123456", response.getResponseId());
-        
-        Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45", response.getTokens().get(0).getTokenUniqueReference());
+
+        Assert.assertEquals("DWSPMC000000000132d72d4fcb2f4136a0532d3093ff1a45",
+                response.getTokens().get(0).getTokenUniqueReference());
         Assert.assertEquals("ACTIVE", response.getTokens().get(0).getStatus());
         Assert.assertEquals(null, response.getTokens().get(0).getSuspendedBy());
         Assert.assertEquals("2017-09-05T00:00:00.000Z", response.getTokens().get(0).getStatusTimestamp());
         Assert.assertEquals(null, response.getTokens().get(0).getProductConfig());
         Assert.assertEquals(null, response.getTokens().get(0).getTokenInfo());
 
-        Assert.assertEquals("DWSPMC00000000032d72d4ffcb2f4136a0532d32d72d4fcb", response.getTokens().get(1).getTokenUniqueReference());
+        Assert.assertEquals("DWSPMC00000000032d72d4ffcb2f4136a0532d32d72d4fcb",
+                response.getTokens().get(1).getTokenUniqueReference());
         Assert.assertEquals("ACTIVE", response.getTokens().get(1).getStatus());
         Assert.assertEquals(null, response.getTokens().get(1).getSuspendedBy());
         Assert.assertEquals("2017-09-06T00:00:00.000Z", response.getTokens().get(1).getStatusTimestamp());
         Assert.assertEquals(null, response.getTokens().get(1).getProductConfig());
         Assert.assertEquals(null, response.getTokens().get(1).getTokenInfo());
-        
-        Assert.assertEquals("DWSPMC000000000fcb2f4136b2f4136a0532d2f4136a0532", response.getTokens().get(2).getTokenUniqueReference());
+
+        Assert.assertEquals("DWSPMC000000000fcb2f4136b2f4136a0532d2f4136a0532",
+                response.getTokens().get(2).getTokenUniqueReference());
         Assert.assertEquals("SUSPENDED", response.getTokens().get(2).getStatus());
         Assert.assertEquals("TOKEN_REQUESTOR", response.getTokens().get(2).getSuspendedBy().get(0));
         Assert.assertEquals("2017-09-07T00:00:00.000Z", response.getTokens().get(2).getStatusTimestamp());
@@ -423,7 +439,6 @@ public class ApiClientTest {
     }
 
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void getTokenTest() throws ApiException {
         GetTokenRequestSchema schema = new GetTokenRequestSchema();
         schema.setResponseHost("site2.payment-app-provider.com");
@@ -445,7 +460,6 @@ public class ApiClientTest {
     }
 
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void transactTest() throws ApiException {
 
         ApiClient apiClient = buildApiClient();
@@ -461,7 +475,7 @@ public class ApiClientTest {
 
         TransactResponseSchema response = transact.createTransact(transactRequestSchema);
 
-        Assert.assertNotNull(response.getResponseId());  
+        Assert.assertNotNull(response.getResponseId());
         Assert.assertEquals("stl.services.mastercard.com/mdes", response.getResponseHost());
         Assert.assertEquals(null, response.getEncryptedPayload().getPublicKeyFingerprint());
         Assert.assertEquals(null, response.getEncryptedPayload().getEncryptedKey());
@@ -477,25 +491,22 @@ public class ApiClientTest {
     }
 
     /**
-     * ErrorResponse.errors schema has been changed at .yaml file. Should have the following schema:
-     *      errors:
-     *          type: array
-     *          items:
-     *              $ref: '#/definitions/Error'      
-     *          description: | 
-     *              __CONDITIONAL__ <br>Returned if one or more errors occurred performing the operation. Not present Get Token error conditions.     
+     * ErrorResponse.errors schema has been changed at .yaml file. Should have the
+     * following schema: errors: type: array items: $ref: '#/definitions/Error'
+     * description: | __CONDITIONAL__ <br>
+     * Returned if one or more errors occurred performing the operation. Not present
+     * Get Token error conditions.
      */
     @Test
-    @Ignore("Expired public key. Until we migrate to travis-ci.com, we cant update environment variables.")
     public void parseError() {
-        
+
         String errorMsg = "{\"errorCode\":\"INVALID_PAN\",\"errorDescription\":\"Invalid PAN\",\"errors\":[{\"source\":\"INPUT\",\"reasonCode\":\"INVALID_PAN\",\"description\":\"Invalid PAN\"}],\"responseId\":\"1c8a20b7-8980-4307-b6ab-7b6f3ccb6dd2\",\"responseHost\":\"stl.services.mastercard.com/mtf/mdes\"}";
-        
+
         Type type = new TypeToken<ErrorsResponse>() {
         }.getType();
-        
+
         ErrorsResponse errorsResponse = new JSON().deserialize(errorMsg, type);
-        
+
         Assert.assertEquals("INVALID_PAN", errorsResponse.getErrorCode());
         Assert.assertEquals("Invalid PAN", errorsResponse.getErrorDescription());
         Assert.assertEquals("1c8a20b7-8980-4307-b6ab-7b6f3ccb6dd2", errorsResponse.getResponseId());
@@ -503,6 +514,6 @@ public class ApiClientTest {
         Assert.assertEquals("INPUT", errorsResponse.getErrors().get(0).getSource());
         Assert.assertEquals("INVALID_PAN", errorsResponse.getErrors().get(0).getReasonCode());
         Assert.assertEquals("Invalid PAN", errorsResponse.getErrors().get(0).getDescription());
-    }   
+    } 
 
 }
