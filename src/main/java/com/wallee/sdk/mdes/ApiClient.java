@@ -12,6 +12,8 @@
 
 package com.wallee.sdk.mdes;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -248,6 +250,8 @@ public class ApiClient {
 		// 2) after should run the Authentification interceptor.
 		httpClient.interceptors().add(new OkHttp2OAuth1Interceptor(apiClientConfiguration.getConsumerKey(),
 				apiClientConfiguration.getSigningKey()));
+				
+        httpClient.setReadTimeout(30, SECONDS);				
 	}
 
 	/*
