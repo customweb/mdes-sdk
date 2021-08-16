@@ -120,6 +120,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void errorInvalidFieldValueTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = errorInvalidFieldValueBuildRequestSchema();
         try {
@@ -175,6 +176,7 @@ public class ApiClientTest {
     }
 
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void errorInvalidArraySizeTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = errorInvalidArraySizeBuildRequestSchema();
         try {
@@ -204,6 +206,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void errorDuplicateFieldValueTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = errorDuplicateFieldValueBuildRequestSchema();
         try {
@@ -304,6 +307,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void errorInvalidFieldLengthTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = errorInvalidFieldLengthBuildRequestSchema();
         try {
@@ -348,6 +352,7 @@ public class ApiClientTest {
     }
 
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void errorMissingRequiredFieldTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = errorMissingRequiredFieldBuildRequestSchema();
         try {
@@ -389,6 +394,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void successTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = successBuildRequestSchema();
         RequestTokenRequestorResponseSchema response = sendRequest(request);
@@ -422,6 +428,7 @@ public class ApiClientTest {
     }
     
     @Test 
+    @Ignore // TODO until we move the MTF test to MTF-only-project in Mastercard
     public void partialSuccessTest() throws ApiException {
         RequestTokenRequestorRequestSchema request = partialSuccessBuildRequestSchema();
         RequestTokenRequestorResponseSchema response = sendRequest(request);
