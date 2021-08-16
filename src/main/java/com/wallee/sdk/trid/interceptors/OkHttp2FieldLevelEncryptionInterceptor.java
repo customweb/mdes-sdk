@@ -91,6 +91,7 @@ public class OkHttp2FieldLevelEncryptionInterceptor implements Interceptor {
                 // Nothing to decrypt
                 return response;
             }
+            handleInvalidContentType(response, responseBody, responsePayload);
 
             // Decrypt fields & update headers
             String decryptedPayload;
@@ -137,5 +138,11 @@ public class OkHttp2FieldLevelEncryptionInterceptor implements Interceptor {
             return;
         }
         requestBuilder.header(name, value);
+    }
+
+    private static void handleInvalidContentType(Response response, ResponseBody responseBody, String responsePayload) {
+        if (responseBody.contentType().type().contains("text/html")) {
+            throw new MdesResponseException(response.code(), responseBody.contentType().type(), responsePayload);
+        }
     }
 }
